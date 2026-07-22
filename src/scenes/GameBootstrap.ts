@@ -13,6 +13,7 @@ import { ProgressionManager } from '../managers/ProgressionManager';
 import type { IGameSave } from '../interfaces/IGameSave';
 import { PlatformManager } from '../platform/PlatformManager';
 import { LocalizationManager } from '../managers/LocalizationManager';
+import { ResourceManager } from '../managers/ResourceManager';
 
 export class GameBootstrap extends Phaser.Scene {
     constructor() {

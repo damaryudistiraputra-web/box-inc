@@ -16,13 +16,18 @@ export class TutorialManager {
         
         const width = this.scene.cameras.main.width;
         
-        // Semi-transparent background at top
-        const bg = this.scene.add.rectangle(width/2, 80, width - 40, 60, 0x000000, 0.8).setStrokeStyle(2, 0x00FFFF);
+        // Soft rounded background
+        const bg = this.scene.add.graphics();
+        bg.fillStyle(0x0a1525, 0.9);
+        bg.fillRoundedRect(20, 70, width - 40, 70, 16);
+        bg.lineStyle(2, 0x44aaff, 1);
+        bg.strokeRoundedRect(20, 70, width - 40, 70, 16);
         
-        this.instructionText = this.scene.add.text(width/2, 80, '', {
-            font: 'bold 24px Arial',
+        this.instructionText = this.scene.add.text(width/2, 105, '', {
+            font: 'bold 20px Arial',
             color: '#FFFFFF',
-            align: 'center'
+            align: 'center',
+            wordWrap: { width: width - 60 }
         }).setOrigin(0.5);
 
         this.overlayContainer.add([bg, this.instructionText]);

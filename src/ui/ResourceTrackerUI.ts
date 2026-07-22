@@ -10,20 +10,24 @@ export class ResourceTrackerUI extends Phaser.GameObjects.Container {
         super(scene, x, y);
         this.resourceId = resourceId;
 
-        this.labelText = scene.add.text(0, 0, label, {
+        const bg = scene.add.graphics();
+        bg.fillStyle(0x000000, 0.5);
+        bg.fillRoundedRect(0, -10, 150, 40, 20);
+
+        this.labelText = scene.add.text(15, 0, label, {
             fontFamily: 'Arial',
-            fontSize: '18px',
+            fontSize: '16px',
             color: '#aaaaaa'
         });
 
-        this.balanceText = scene.add.text(this.labelText.width + 10, 0, '0', {
+        this.balanceText = scene.add.text(this.labelText.x + this.labelText.width + 5, 0, '0', {
             fontFamily: 'Arial',
-            fontSize: '20px',
+            fontSize: '18px',
             fontStyle: 'bold',
-            color: '#00ff00'
+            color: '#44ffa5'
         });
 
-        this.add([this.labelText, this.balanceText]);
+        this.add([bg, this.labelText, this.balanceText]);
         scene.add.existing(this);
 
         this.setupListeners();

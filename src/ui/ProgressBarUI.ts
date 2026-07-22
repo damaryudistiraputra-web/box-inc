@@ -52,8 +52,10 @@ export class ProgressBarUI {
 
     private drawBar(percent: number) {
         this.bgBar.clear();
-        this.bgBar.fillStyle(0x333333);
+        this.bgBar.fillStyle(0x1a2a3a);
         this.bgBar.fillRoundedRect(0, 0, this.width, this.height, 10);
+        this.bgBar.lineStyle(2, 0x44aaff, 1);
+        this.bgBar.strokeRoundedRect(0, 0, this.width, this.height, 10);
 
         // We use a tween instead of redrawing instantly
         const targetWidth = Math.min(this.width * percent, this.width);

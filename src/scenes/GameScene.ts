@@ -33,6 +33,7 @@ import { RewardManager } from '../managers/RewardManager';
 import { IncomeBoostUI } from '../ui/IncomeBoostUI';
 import { MonetizationTests } from '../utils/MonetizationTests';
 import { FPSMonitor } from '../utils/FPSMonitor';
+import { HelpUI } from '../ui/HelpUI';
 
 export class GameScene extends Phaser.Scene {
     private boxPool!: BoxPool;
@@ -72,7 +73,22 @@ export class GameScene extends Phaser.Scene {
 
     create() {
         console.log('GameScene: ready');
-        this.add.text(this.cameras.main.centerX, 50, 'BOX INC.', { font: '32px Arial', color: '#ffffff' }).setOrigin(0.5);
+
+        // Draw a nice radial gradient background to replace the flat color
+        const bg = this.add.graphics();
+        bg.fillGradientStyle(0x1a2a40, 0x1a2a40, 0x0a101f, 0x0a101f, 1);
+        bg.fillRect(0, 0, this.cameras.main.width, this.cameras.main.height);
+        
+        // Add subtle grid overlay to make it less boring
+        this.add.grid(
+            this.cameras.main.centerX, 
+            this.cameras.main.centerY, 
+            this.cameras.main.width, 
+            this.cameras.main.height, 
+            30, 30, 
+            0x000000, 0, 
+            0xffffff, 0.03
+        );
 
         // 1. Init Dependencies
         this.boxPool = new BoxPool(this, 15);
@@ -89,7 +105,7 @@ export class GameScene extends Phaser.Scene {
         // --- Economy Setup ---
         // ResourceManager is already initialized in GameBootstrap
         this.economyManager = new EconomyManager(this);
-        this.shopManager = new ShopManager();
+        this.shopManager = ShopManager.getInstance();
         
         // --- Visual & Audio ---
         this.visualFXManager = new VisualFXManager(this);
@@ -144,8 +160,8 @@ export class GameScene extends Phaser.Scene {
         // Merge Meter UI
         new MergeMeterUI(this, this.cameras.main.centerX, this.cameras.main.height - 150);
 
-        // Shipment UI (Side panel)
-        new ShipmentUI(this, this.cameras.main.width - 120, this.cameras.main.centerY, this.shipmentManager, this.boxPool);
+        // Shipment UI (Side panel, moved to bottom right to avoid grid overlap)
+        new ShipmentUI(this, this.cameras.main.width - 110, this.cameras.main.height - 230, this.shipmentManager, this.boxPool);
 
         // GoldenTruckEventUI
         new GoldenTruckEventUI(this);
@@ -155,6 +171,9 @@ export class GameScene extends Phaser.Scene {
 
         // FTUE / Tutorial
         new TutorialManager(this);
+        
+        // Help UI (Panduan)
+        new HelpUI(this, 30, this.cameras.main.height - 30);
 
         // --- Save System Hooks ---
         EventBus.on(EVENTS.RESOURCE_CHANGED, this.markSaveDirty, this);

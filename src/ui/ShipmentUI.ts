@@ -13,31 +13,32 @@ export class ShipmentUI {
     private scene: Phaser.Scene;
     private manager: ShipmentManager;
     private container: Phaser.GameObjects.Container;
-    private bg: Phaser.GameObjects.Rectangle;
+    private bg: Phaser.GameObjects.Graphics;
     private titleText: Phaser.GameObjects.Text;
     private reqsText: Phaser.GameObjects.Text;
     private rewardText: Phaser.GameObjects.Text;
     private claimBtn: Phaser.GameObjects.Container;
-    private claimBtnBg: Phaser.GameObjects.Rectangle;
+    private claimBtnBg: Phaser.GameObjects.Graphics;
     private claimBtnText: Phaser.GameObjects.Text;
     private adBtn!: Phaser.GameObjects.Container;
-    private adBtnBg!: Phaser.GameObjects.Rectangle;
+    private adBtnBg!: Phaser.GameObjects.Graphics;
     private adBtnText!: Phaser.GameObjects.Text;
     private adOfferShown: boolean = false;
     private boxPool: any;
-
-    private width = 200;
-    private height = 190;
 
     constructor(scene: Phaser.Scene, x: number, y: number, manager: ShipmentManager, boxPool: any) {
         this.scene = scene;
         this.manager = manager;
         this.boxPool = boxPool;
 
-        this.bg = this.scene.add.rectangle(0, 0, this.width, this.height, 0x223344, 0.8)
-            .setStrokeStyle(2, 0x446688);
+        // Panel Background
+        this.bg = this.scene.add.graphics();
+        this.bg.fillStyle(0x112233, 0.95);
+        this.bg.fillRoundedRect(-100, -95, 200, 190, 12);
+        this.bg.lineStyle(2, 0x556677, 1);
+        this.bg.strokeRoundedRect(-100, -95, 200, 190, 12);
 
-        this.titleText = this.scene.add.text(0, -this.height/2 + 20, LocalizationManager.t('shipment.title'), {
+        this.titleText = this.scene.add.text(0, -75, LocalizationManager.t('shipment.title'), {
             font: 'bold 16px Arial',
             color: '#FFFFFF'
         }).setOrigin(0.5);
@@ -54,26 +55,35 @@ export class ShipmentUI {
         }).setOrigin(0.5);
 
         // Claim Button
-        this.claimBtnBg = this.scene.add.rectangle(0, 0, 100, 30, 0x44AA44, 1)
-            .setInteractive({ useHandCursor: true });
+        this.claimBtnBg = this.scene.add.graphics() as any; // Using graphics instead of rect
+        (this.claimBtnBg as any).fillStyle(0x44AA44, 1);
+        (this.claimBtnBg as any).fillRoundedRect(-50, -15, 100, 30, 8);
+        
+        // Add a transparent zone for clicking
+        const claimZone = this.scene.add.zone(0, 0, 100, 30).setInteractive({ useHandCursor: true });
+        
         this.claimBtnText = this.scene.add.text(0, 0, LocalizationManager.t('shipment.claim'), {
             font: 'bold 14px Arial',
             color: '#FFFFFF'
         }).setOrigin(0.5);
-        this.claimBtn = this.scene.add.container(0, 35, [this.claimBtnBg, this.claimBtnText]);
+        this.claimBtn = this.scene.add.container(0, 35, [this.claimBtnBg, claimZone, this.claimBtnText]);
 
-        this.claimBtnBg.on('pointerdown', () => this.onClaimClicked());
+        claimZone.on('pointerdown', () => this.onClaimClicked());
 
         // Ad Button
-        this.adBtnBg = this.scene.add.rectangle(0, 0, 120, 30, 0xAA6600, 1)
-            .setInteractive({ useHandCursor: true });
+        this.adBtnBg = this.scene.add.graphics() as any;
+        (this.adBtnBg as any).fillStyle(0xAA6600, 1);
+        (this.adBtnBg as any).fillRoundedRect(-60, -15, 120, 30, 8);
+        
+        const adZone = this.scene.add.zone(0, 0, 120, 30).setInteractive({ useHandCursor: true });
+        
         this.adBtnText = this.scene.add.text(0, 0, 'Double Reward\n(Watch Ad)', {
             font: 'bold 12px Arial',
             color: '#FFFFFF',
             align: 'center'
         }).setOrigin(0.5);
-        this.adBtn = this.scene.add.container(0, 75, [this.adBtnBg, this.adBtnText]);
-        this.adBtnBg.on('pointerdown', () => this.onAdClicked());
+        this.adBtn = this.scene.add.container(0, 75, [this.adBtnBg, adZone, this.adBtnText]);
+        adZone.on('pointerdown', () => this.onAdClicked());
 
         this.container = this.scene.add.container(x, y, [
             this.bg, this.titleText, this.reqsText, this.rewardText, this.claimBtn, this.adBtn
@@ -161,7 +171,9 @@ export class ShipmentUI {
 
         const canClaim = this.manager.canClaim();
         if (canClaim) {
-            this.claimBtnBg.setFillStyle(0x44AA44, 1);
+            this.claimBtnBg.clear();
+            this.claimBtnBg.fillStyle(0x44AA44, 1);
+            this.claimBtnBg.fillRoundedRect(-50, -15, 100, 30, 8);
             this.claimBtnText.setText(LocalizationManager.t('shipment.claim'));
             
             // Pulse animation if not already playing
@@ -186,7 +198,9 @@ export class ShipmentUI {
                 this.adBtn.setVisible(false);
             }
         } else {
-            this.claimBtnBg.setFillStyle(0x555555, 1);
+            this.claimBtnBg.clear();
+            this.claimBtnBg.fillStyle(0x555555, 1);
+            this.claimBtnBg.fillRoundedRect(-50, -15, 100, 30, 8);
             this.claimBtnText.setText(LocalizationManager.t('shipment.not_met'));
             this.scene.tweens.killTweensOf(this.claimBtn);
             this.claimBtn.setScale(1);

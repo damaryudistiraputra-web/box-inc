@@ -2,14 +2,23 @@ import { EventBus, EVENTS } from '../core/EventBus';
 import { ResourceManager } from './ResourceManager';
 import { Modifiers } from './ModifierManager';
 
+import { StatisticsManager } from './StatisticsManager';
+
 export class ShopManager {
+    private static instance: ShopManager;
     private baseCost: number = 10;
     private costMultiplier: number = 1.15;
-    private totalBought: number = 0;
     private isGridFull: boolean = false;
 
-    constructor() {
+    private constructor() {
         this.setupListeners();
+    }
+    
+    public static getInstance(): ShopManager {
+        if (!ShopManager.instance) {
+            ShopManager.instance = new ShopManager();
+        }
+        return ShopManager.instance;
     }
 
     private setupListeners(): void {
@@ -19,7 +28,8 @@ export class ShopManager {
     }
 
     public getNextBoxCost(): bigint {
-        const rawCost = this.baseCost * Math.pow(this.costMultiplier, this.totalBought);
+        const totalBought = StatisticsManager.getInstance().getStats().boxesBought || 0;
+        const rawCost = this.baseCost * Math.pow(this.costMultiplier, totalBought);
         const discountedCost = rawCost * Modifiers.discountMultiplier;
         return BigInt(Math.floor(discountedCost));
     }
@@ -35,8 +45,6 @@ export class ShopManager {
         
         if (resourceManager.hasEnough('money', cost)) {
             EventBus.emit(EVENTS.RESOURCE_SPEND, { id: 'money', amount: cost });
-            
-            this.totalBought++;
             
             // Tell SpawnManager to spawn a box
             EventBus.emit(EVENTS.SHOP_BUY_SUCCESS, { 
