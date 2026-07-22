@@ -193,8 +193,6 @@ export class GameScene extends Phaser.Scene {
         void this.visualFXManager;
         void this.audioManager;
         void this.animationManager;
-        // FTUE / Tutorial
-        new TutorialManager(this);
 
         // Resume any pending rewards (crash recovery)
         RewardManager.getInstance().resumePendingRewards();
@@ -212,6 +210,9 @@ export class GameScene extends Phaser.Scene {
         EventBus.off(EVENTS.BOX_REMOVED, this.markSaveDirty, this);
         EventBus.off(EVENTS.BOX_LEVEL_UP, this.markSaveDirty, this);
         EventBus.off(EVENTS.REQUEST_SAVE_DATA, this.sendSaveData, this);
+        
+        if (this.audioManager) this.audioManager.destroy();
+        if (this.economyManager) this.economyManager.destroy();
     }
 
     private markSaveDirty(): void {
