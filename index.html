@@ -22,6 +22,22 @@
   </head>
   <body>
     <div id="game-container"></div>
+    <div id="error-log" style="position: absolute; top: 0; left: 0; z-index: 9999; color: red; background: rgba(0,0,0,0.8); padding: 10px; font-family: monospace; white-space: pre-wrap; pointer-events: none;"></div>
+    <script>
+      window.onerror = function(msg, url, lineNo, columnNo, error) {
+        var el = document.getElementById('error-log');
+        if (el) {
+          el.innerHTML += "Error: " + msg + "\nURL: " + url + "\nLine: " + lineNo + ":" + columnNo + "\nStack: " + (error && error.stack ? error.stack : "") + "\n\n";
+        }
+        return false;
+      };
+      window.addEventListener('unhandledrejection', function(event) {
+        var el = document.getElementById('error-log');
+        if (el) {
+          el.innerHTML += "Promise Error: " + (event.reason && event.reason.stack ? event.reason.stack : event.reason) + "\n\n";
+        }
+      });
+    </script>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
