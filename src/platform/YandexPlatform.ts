@@ -117,11 +117,28 @@ export class YandexPlatform implements IPlatform {
 
     private initialized = false;
 
+    private async loadYandexSDK(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            if (typeof window.YaGames !== 'undefined' || typeof window.ysdk !== 'undefined') {
+                resolve();
+                return;
+            }
+            console.log('[YandexPlatform] Injecting Yandex SDK script...');
+            const script = document.createElement('script');
+            script.src = 'https://yandex.ru/games/sdk/v2';
+            script.onload = () => resolve();
+            script.onerror = () => reject(new Error('Failed to load Yandex SDK script'));
+            document.head.appendChild(script);
+        });
+    }
+
     async initialize(): Promise<void> {
         if (this.initialized) return;
 
-        if (typeof window.ysdk === 'undefined' && typeof window.YaGames === 'undefined') {
-            throw new Error('ysdk and YaGames are undefined. Not in Yandex environment.');
+        try {
+            await this.loadYandexSDK();
+        } catch (e) {
+            throw new Error('Could not load Yandex SDK');
         }
 
         if (typeof window.YaGames !== 'undefined') {
