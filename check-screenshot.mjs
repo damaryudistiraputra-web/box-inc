@@ -4,16 +4,18 @@ import { chromium } from 'playwright';
     try {
         console.log('Launching Playwright to take screenshot...');
         const browser = await chromium.launch();
-        const page = await browser.newPage();
+        const context = await browser.newContext();
+        const page = await context.newPage();
 
-        page.on('console', msg => console.log(`BROWSER LOG [${msg.type()}]:`, msg.text()));
-        page.on('pageerror', error => console.error('BROWSER ERROR:', error.message));
+        page.on('console', msg => console.log('PAGE LOG:', msg.text()));
+        page.on('pageerror', error => console.log('PAGE ERROR:', error.message));
+        page.on('requestfailed', request => console.log('REQUEST FAILED:', request.url(), request.failure()?.errorText));
 
-        console.log('Navigating to https://box-inc-1k4b.vercel.app/ ...');
-        await page.goto('https://box-inc-1k4b.vercel.app/', { waitUntil: 'networkidle', timeout: 15000 });
+        console.log('Navigating to http://localhost:4173/ ...');
+        await page.goto('http://localhost:4173/', { waitUntil: 'networkidle', timeout: 15000 });
         
-        console.log('Waiting 2 seconds...');
-        await new Promise(r => setTimeout(r, 2000));
+        console.log('Waiting 5 seconds...');
+        await page.waitForTimeout(5000);
         
         await page.screenshot({ path: 'LANCE_FINAL.png' });
         console.log('Screenshot saved to LANCE_FINAL.png');

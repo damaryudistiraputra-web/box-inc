@@ -228,7 +228,14 @@ export class SaveManager {
                 lastClaimTime: 0,
                 streak: 0
             };
+            save.grid = save.grid || { boxes: [] };
             save.achievements = save.achievements || [];
+            save.modifiers = save.modifiers || {
+                incomeMultiplier: 1.0,
+                discountMultiplier: 1.0,
+                startingLevel: 1,
+                criticalChance: 0.05
+            };
             currentVersion = 1;
         }
 

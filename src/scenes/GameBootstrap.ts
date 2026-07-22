@@ -34,10 +34,17 @@ export class GameBootstrap extends Phaser.Scene {
         LocalizationManager.getInstance().init();
         
         // Fix: Initialize ResourceManager with saved money or starting money
-        let startingMoney = BigInt(saveData.resources.money || "0");
+        let startingMoney = BigInt(saveData.resources?.money || "0");
         
         // Give starting boxes and money for brand new players
-        if (saveData.stats.totalMerges === 0 && saveData.stats.boxesBought === 0 && saveData.grid.boxes.length === 0) {
+        if (!saveData.grid) {
+            saveData.grid = { boxes: [] };
+        }
+        if (!saveData.grid.boxes) {
+            saveData.grid.boxes = [];
+        }
+
+        if (saveData.stats?.totalMerges === 0 && saveData.stats?.boxesBought === 0 && saveData.grid.boxes.length === 0) {
             saveData.grid.boxes.push({ col: 1, row: 1, level: 1 });
             saveData.grid.boxes.push({ col: 1, row: 2, level: 1 });
             if (startingMoney < 20n) {
