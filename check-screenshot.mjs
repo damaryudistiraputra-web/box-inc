@@ -9,8 +9,8 @@ import { chromium } from 'playwright';
         page.on('console', msg => console.log(`BROWSER LOG [${msg.type()}]:`, msg.text()));
         page.on('pageerror', error => console.error('BROWSER ERROR:', error.message));
 
-        console.log('Navigating to http://localhost:4174 ...');
-        await page.goto('http://localhost:4174', { waitUntil: 'networkidle', timeout: 15000 });
+        console.log('Navigating to https://box-inc-1k4b.vercel.app/ ...');
+        await page.goto('https://box-inc-1k4b.vercel.app/', { waitUntil: 'networkidle', timeout: 15000 });
         
         console.log('Waiting 2 seconds...');
         await new Promise(r => setTimeout(r, 2000));
