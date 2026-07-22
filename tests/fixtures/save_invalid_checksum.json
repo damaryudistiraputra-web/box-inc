@@ -1,0 +1,23 @@
+{
+    "checksum": "deadbeef123",
+    "saveData": {
+        "version": 4,
+        "deviceId": "invalid-checksum-device",
+        "lastSaveTime": 1783702273146,
+        "resources": {
+            "money": "999999",
+            "blueprints": 10
+        },
+        "grid": {
+            "boxes": [],
+            "size": { "width": 3, "height": 3 }
+        },
+        "stats": {
+            "totalMerges": 1000,
+            "highestBoxLevel": 100,
+            "shipmentsCompleted": 50,
+            "prestigeCount": 10,
+            "totalSessions": 5
+        }
+    }
+}

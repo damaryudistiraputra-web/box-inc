@@ -1,0 +1,10 @@
+{
+    "version": 4,
+    "deviceId": "truncated-device",
+    "lastSaveTime": 1783702273146,
+    "resources": {
+        "money": "1000",
+        "blueprints": 10
+    },
+    "grid": {
+        "boxes": [

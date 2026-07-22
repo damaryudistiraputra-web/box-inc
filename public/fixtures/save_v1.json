@@ -1,0 +1,13 @@
+{
+    "version": 1,
+    "lastSaveTime": 1700000000000,
+    "money": "1000",
+    "boxes": [
+        { "id": "b1", "level": 1, "gridX": 0, "gridY": 0 }
+    ],
+    "stats": {
+        "highestBoxLevel": 2,
+        "totalMerges": 1,
+        "prestigeCount": 0
+    }
+}

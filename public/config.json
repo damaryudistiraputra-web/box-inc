@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "economy": {
+    "criticalMergeChance": 0.05,
+    "goldenTruckFillRate": 1.5,
+    "shipmentRewardMultiplier": 2.0,
+    "prestigeBonus": 0.2
+  },
+  "features": {
+    "shipment": true,
+    "goldenTruck": true,
+    "criticalMerge": true,
+    "combo": true,
+    "prestige": true,
+    "ads": true,
+    "achievement": true,
+    "tutorial": true,
+    "dailyLogin": false,
+    "cloudSave": false
+  },
+  "ads": {
+    "rewardedEnabled": true,
+    "shipmentDoubleReward": true,
+    "goldenTruckDoubleLoot": true,
+    "rewardedCooldown": 60,
+    "dailyLimit": 20
+  },
+  "abTesting": {
+    "variantStrategy": "hash"
+  }
+}

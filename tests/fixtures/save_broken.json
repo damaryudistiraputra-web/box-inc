@@ -1,0 +1,10 @@
+{
+    "version": 1,
+    "deviceId": "broken-device",
+    "lastSaveTime": 1783702273146,
+    "resources": {
+        "money": "1000",
+        "blueprints": 10
+    }
+    // MISSING grid, MISSING stats
+}

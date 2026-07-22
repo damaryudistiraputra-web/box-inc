@@ -1,0 +1,17 @@
+{
+  "timestamp": 1784751969683,
+  "date": "2026-07-22T20:26:09.683Z",
+  "metrics": {
+    "timeToPrestigeMinutes": 30.016666666666666,
+    "blueprintsPerHour": 10,
+    "totalMerges": 198
+  },
+  "incomeSourcesPct": {
+    "passive": 0,
+    "shipment": 44.2,
+    "goldenTruck": 21.4,
+    "ads": 34.4
+  },
+  "guardrailsPassed": true,
+  "guardrailFailures": []
+}

@@ -1,0 +1,25 @@
+{
+    "version": 1,
+    "saveVersion": 3,
+    "gameVersion": "0.9.0",
+    "economyVersion": 1,
+    "contentVersion": 1,
+    "lastSaveTime": 1700000000000,
+    "resources": {
+        "money": "5000",
+        "blueprint": "10"
+    },
+    "grid": {
+        "boxes": [
+            { "id": "b1", "level": 1, "gridX": 0, "gridY": 0 }
+        ]
+    },
+    "stats": {
+        "highestBoxLevel": 2,
+        "totalMerges": 1,
+        "prestigeCount": 1
+    },
+    "pendingRewards": ["abc-123"],
+    "adsToday": 5,
+    "lastAdResetDate": 1700000000000
+}

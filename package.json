@@ -1,0 +1,28 @@
+{
+  "name": "box-inc",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "prebuild": "node tools/generate-manifest.js",
+    "build": "tsc && vite build",
+    "postbuild": "node tools/move-sourcemaps.js",
+    "preview": "vite preview",
+    "profile": "vite build --mode profile",
+    "simulator": "node scripts/simulator.js",
+    "lint": "eslint . --ext .ts,.js",
+    "format": "prettier --write src/"
+  },
+  "devDependencies": {
+    "jsdom": "^29.1.1",
+    "terser": "^5.49.0",
+    "tsx": "^4.23.1",
+    "typescript": "~6.0.2",
+    "vite": "^8.1.1",
+    "vitest": "^4.1.10"
+  },
+  "dependencies": {
+    "phaser": "^4.2.1"
+  }
+}

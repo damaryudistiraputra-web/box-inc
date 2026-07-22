@@ -1,0 +1,24 @@
+{
+    "version": 99,
+    "economyVersion": 5,
+    "deviceId": "future-device",
+    "lastSaveTime": 1783702273146,
+    "resources": {
+        "money": "1000",
+        "blueprints": 10
+    },
+    "grid": {
+        "boxes": [
+            { "id": "b1", "level": 100, "x": 0, "y": 0, "createdAt": 1783702273146 }
+        ],
+        "size": { "width": 3, "height": 3 }
+    },
+    "stats": {
+        "totalMerges": 1000,
+        "highestBoxLevel": 100,
+        "shipmentsCompleted": 50,
+        "prestigeCount": 10,
+        "totalSessions": 5,
+        "futureStat": "something-from-the-future"
+    }
+}
