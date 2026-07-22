@@ -31,6 +31,21 @@ export class GameBootstrap extends Phaser.Scene {
 
         // 2. Initialize Managers
         LocalizationManager.getInstance().init();
+        
+        // Fix: Initialize ResourceManager with saved money or starting money
+        let startingMoney = BigInt(saveData.resources.money || "0");
+        
+        // Give starting boxes and money for brand new players
+        if (saveData.stats.totalMerges === 0 && saveData.stats.boxesBought === 0 && saveData.grid.boxes.length === 0) {
+            saveData.grid.boxes.push({ col: 1, row: 1, level: 1 });
+            saveData.grid.boxes.push({ col: 1, row: 2, level: 1 });
+            if (startingMoney < 20n) {
+                startingMoney = 50n;
+            }
+        }
+        
+        ResourceManager.getInstance().init(startingMoney);
+        
         StatisticsManager.getInstance().init(saveData.stats);
         AchievementManager.getInstance();
         DailyRewardManager.getInstance().init(saveData.daily);
