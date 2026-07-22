@@ -7,6 +7,7 @@ import { EventBus, EVENTS } from '../core/EventBus';
 export class BoxEntity extends Phaser.GameObjects.Container implements IIncomeSource {
     private boxGraphics: Phaser.GameObjects.Graphics;
     private levelText: Phaser.GameObjects.Text;
+    private emojiText: Phaser.GameObjects.Text;
     private currentLevel: number = 1;
     private boxId: string;
     
@@ -17,13 +18,19 @@ export class BoxEntity extends Phaser.GameObjects.Container implements IIncomeSo
         this.boxId = 'box_' + Phaser.Math.RND.uuid();
 
         this.boxGraphics = scene.add.graphics();
-        this.levelText = scene.add.text(0, 0, '', {
+        
+        this.emojiText = scene.add.text(0, -8, '', {
             fontFamily: 'Arial',
-            fontSize: '24px',
+            fontSize: '40px'
+        }).setOrigin(0.5);
+
+        this.levelText = scene.add.text(0, 24, '', {
+            fontFamily: 'Arial',
+            fontSize: '14px',
             fontStyle: 'bold'
         }).setOrigin(0.5);
 
-        this.add([this.boxGraphics, this.levelText]);
+        this.add([this.boxGraphics, this.emojiText, this.levelText]);
         
         // Interactive zone for future drag & drop
         this.setSize(BOX_SIZE, BOX_SIZE);
@@ -66,6 +73,7 @@ export class BoxEntity extends Phaser.GameObjects.Container implements IIncomeSo
         this.boxGraphics.clear();
         this.boxGraphics.fillStyle(0xFFD700);
         this.boxGraphics.fillRoundedRect(-BOX_SIZE/2, -BOX_SIZE/2, BOX_SIZE, BOX_SIZE, BOX_CORNER_RADIUS);
+        this.emojiText.setText('❓'); // Question mark emoji during reveal
         this.levelText.setText('???');
         
         // Jiggle animation
@@ -98,9 +106,14 @@ export class BoxEntity extends Phaser.GameObjects.Container implements IIncomeSo
 
     public setLevel(level: number): void {
         this.currentLevel = level;
-        const config = BOX_CONFIG[level] || BOX_CONFIG[1];
+        
+        // Wrap around if level exceeds defined configs
+        const safeLevel = level > 10 ? 10 : level;
+        const config = BOX_CONFIG[safeLevel] || BOX_CONFIG[1];
         
         this.renderBox(config.color);
+        
+        this.emojiText.setText(config.emoji);
         this.levelText.setText(`Lv ${level}`);
         this.levelText.setColor(config.textColor);
     }
