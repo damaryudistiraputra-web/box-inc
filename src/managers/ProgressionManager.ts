@@ -10,6 +10,7 @@ export class ProgressionManager {
     private currentStageId: number = 1;
 
     private constructor() {
+        ProgressionManager.instance = this;
         // Initialize from save
         this.calculateScore();
         this.updateStage();
