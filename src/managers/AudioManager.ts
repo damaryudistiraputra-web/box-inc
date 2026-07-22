@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { EventBus, EVENTS } from '../core/EventBus';
+import { zzfx } from '../utils/ZzFX';
 
 export class AudioManager {
     private scene: Phaser.Scene;
@@ -39,33 +40,40 @@ export class AudioManager {
         // Increase concurrency counter
         this.concurrency.set(key, currentCount + 1);
 
-        // Actually play sound (assuming they are loaded in PreloadScene)
-        // If they are not loaded, Phaser will just warn.
         try {
-            // We use 'any' if the cache doesn't have it, we catch it
-            if (this.scene.cache.audio.exists(key)) {
-                const sound = this.scene.sound.add(key, { volume });
-                sound.play();
-                
-                sound.once('complete', () => {
-                    const count = this.concurrency.get(key) || 1;
-                    this.concurrency.set(key, count - 1);
-                    sound.destroy();
-                });
-            } else {
-                // Fallback / Mock
-                // console.log(`[Audio] Playing ${key} (mock)`);
-                // Simulate duration
-                this.scene.time.delayedCall(300, () => {
-                    const count = this.concurrency.get(key) || 1;
-                    this.concurrency.set(key, count - 1);
-                });
+            // ZzFX procedural sounds
+            switch (key) {
+                case 'sfx_pop':
+                    zzfx(1, 0.05, 300, 0.01, 0.01, 0.01, 0, 1.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0);
+                    break;
+                case 'sfx_drop':
+                    zzfx(0.8, 0.05, 200, 0.01, 0.01, 0.01, 0, 1.2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0);
+                    break;
+                case 'sfx_merge':
+                    zzfx(1, 0.05, 600, 0.02, 0.1, 0.1, 1, 1.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.5, 0, 0);
+                    break;
+                case 'sfx_buy':
+                    zzfx(1, 0.05, 400, 0.01, 0.05, 0.05, 0, 1.2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0);
+                    break;
+                case 'sfx_coin':
+                    zzfx(0.3 * volume, 0.01, 1200, 0.01, 0.01, 0.01, 0, 1.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0);
+                    break;
+                case 'sfx_error':
+                    zzfx(1, 0.1, 150, 0.01, 0.1, 0.1, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0);
+                    break;
+                default:
+                    zzfx(1, 0.05, 200, 0, 0.1, 0.1);
+                    break;
             }
         } catch (e) {
-            console.warn(`[Audio] Failed to play ${key}`);
+            console.warn(`[Audio] Failed to play ${key}`, e);
+        }
+
+        // Release concurrency after approx duration (100ms)
+        this.scene.time.delayedCall(100, () => {
             const count = this.concurrency.get(key) || 1;
             this.concurrency.set(key, count - 1);
-        }
+        });
     }
 
     public destroy(): void {
