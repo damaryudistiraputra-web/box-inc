@@ -12,7 +12,7 @@ export class SaveManager {
     private static SAVE_KEY_A = 'boxinc_save_a';
     private static SAVE_KEY_B = 'boxinc_save_b';
     private static SAVE_KEY_ACTIVE = 'boxinc_active_slot';
-    private static CURRENT_SAVE_VERSION = 4;
+    private static CURRENT_SAVE_VERSION = 5;
     private static GAME_VERSION = '0.9.0';
     private static ECONOMY_VERSION = 1;
     private static CONTENT_VERSION = 1;
@@ -267,6 +267,21 @@ export class SaveManager {
             save.adsToday = save.adsToday || 0;
             save.lastAdResetDate = save.lastAdResetDate || 0;
             currentSaveVersion = 4;
+        }
+
+        // Migrate to Save Version 5 (Modifiers introduced)
+        if (currentSaveVersion < 5) {
+            save.saveVersion = 5;
+            save.modifiers = save.modifiers || {
+                incomeMultiplier: 1.0,
+                discountMultiplier: 1.0,
+                startingLevel: 1,
+                criticalChance: 0.05
+            };
+            // Also ensure grid exists just in case
+            save.grid = save.grid || { boxes: [] };
+            if (!save.grid.boxes) save.grid.boxes = [];
+            currentSaveVersion = 5;
         }
 
         return save as IGameSave;
