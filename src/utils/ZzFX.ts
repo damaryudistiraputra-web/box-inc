@@ -10,7 +10,7 @@ export const initZzfx = () => {
     }
 };
 
-export const zzfx = (...t: any[]) => zzfxP(zzfxG(...t));
+export const zzfx = (...t: any[]) => zzfxP(...zzfxG(...t));
 
 export const zzfxP = (...t: any[]) => {
     if (!zzfxX) initZzfx();
