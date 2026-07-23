@@ -7,6 +7,7 @@ export class GridCell extends Phaser.GameObjects.Graphics {
     
     constructor(scene: Phaser.Scene, x: number, y: number, col: number, row: number, size: number) {
         super(scene, { x, y });
+        this.setName('gridCell');
         this.col = col;
         this.row = row;
         this.cellSize = size;

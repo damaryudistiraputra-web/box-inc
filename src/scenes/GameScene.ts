@@ -125,15 +125,21 @@ export class GameScene extends Phaser.Scene {
 
         // --- UI Container for Grid (Visual Scaling) ---
         // Layer 100
-        const gridContainer = this.add.container(this.cameras.main.centerX, this.cameras.main.centerY - 80);
-        gridContainer.setScale(1.18); // Scale up ~20%
+        const gridContainer = this.add.container(this.cameras.main.centerX, this.cameras.main.centerY - 100);
+        gridContainer.setScale(1.7); // Scale up 70% to occupy ~65% of screen width/height
         gridContainer.setDepth(100);
 
-        // Move all generated grid cells and boxes into the scaled container
+        // Move all initial grid cells and boxes into the scaled container
         this.children.list.forEach(child => {
-            // Check by constructor name to avoid circular imports or missing exports
-            if (child.constructor.name === 'GridCell' || child.constructor.name === 'BoxEntity') {
+            if (child.name === 'gridCell' || child.name === 'boxEntity') {
                 gridContainer.add(child);
+            }
+        });
+
+        // Listen for new boxes being spawned (e.g. from expanding the pool)
+        EventBus.on(EVENTS.BOX_CREATED, (payload: any) => {
+            if (payload.box) {
+                gridContainer.add(payload.box);
             }
         });
 
@@ -163,24 +169,24 @@ export class GameScene extends Phaser.Scene {
         // 4. Build UI (Layers 500+)
         new ResourceTrackerUI(this, 16, 48, 'money'); // Layer 500 via component
         
-        // Progress Bar (Zone 2 - Below Top Bar)
-        new ProgressBarUI(this, this.cameras.main.centerX, 140);
-        
         // Income Boost UI (Zone 1 - Top Right)
         new IncomeBoostUI(this, this.cameras.main.width - 96, 48);
 
-        // Shop UI at the bottom (Mega Button) - Layer 500
+        // Progress Bar (Factory) - Directly above the grid
+        new ProgressBarUI(this, this.cameras.main.centerX, 180);
+
+        // Merge Meter UI (Delivery Truck) - Directly below the grid
+        new MergeMeterUI(this, this.cameras.main.centerX, 890);
+
+        // Shipment UI (Permanent Bottom Panel) - Unified with Truck
+        new ShipmentUI(this, this.cameras.main.centerX, 990, this.shipmentManager, this.boxPool);
+
+        // Shop UI at the bottom (Mega Button) - Docked with 16px safe margin
         const shop = new ShopUI(this, this.cameras.main.centerX, this.cameras.main.height - 80);
         shop.setDepth(500);
         
         // Stage Announcer (Layer 800)
         new StageAnnouncerUI(this);
-
-        // Merge Meter UI (Delivery Truck) - Above Mega Button
-        new MergeMeterUI(this, this.cameras.main.centerX, this.cameras.main.height - 180);
-
-        // Shipment UI (Permanent Bottom Panel) - Above Delivery Truck
-        new ShipmentUI(this, this.cameras.main.centerX, this.cameras.main.height - 300, this.shipmentManager, this.boxPool);
 
         // GoldenTruckEventUI
         new GoldenTruckEventUI(this);

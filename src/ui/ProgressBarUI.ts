@@ -22,23 +22,21 @@ export class ProgressBarUI {
         this.glowBar = this.scene.add.graphics(); // Behind fill for ambient glow
         this.fillBar = this.scene.add.graphics();
         
-        // Factory Title is centered above the bar
-        this.stageText = this.scene.add.text(this.width / 2, -26, '', { 
+        this.stageText = this.scene.add.text(0, -32, '', { 
             fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-            fontSize: '24px', 
-            color: '#F8FAFC',
+            fontSize: '18px', 
             fontStyle: 'bold',
-            shadow: { offsetX: 0, offsetY: 2, color: '#000000', blur: 4, fill: true }
+            color: '#F8FAFC'
         }).setOrigin(0.5);
 
-        // Score is centered inside the bar
-        this.scoreText = this.scene.add.text(this.width / 2, this.height / 2, '', { 
+        // Premium score text embedded in the bar
+        this.scoreText = this.scene.add.text(0, 0, '', { 
             fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
             fontSize: '16px',
             fontStyle: 'bold', 
             color: '#FFFFFF',
             shadow: { offsetX: 0, offsetY: 1, color: '#000000', blur: 2, fill: true }
-        }).setOrigin(0.5).setDepth(10);
+        }).setOrigin(0.5);
 
         this.container = this.scene.add.container(x, y, [this.bgBar, this.glowBar, this.fillBar, this.stageText, this.scoreText]);
         this.container.setDepth(500);
@@ -72,14 +70,12 @@ export class ProgressBarUI {
 
     private drawBar(percent: number) {
         this.bgBar.clear();
-        // Dark translucent background
-        this.bgBar.fillStyle(0x0F172A, 0.85);
-        this.bgBar.fillRoundedRect(0, 0, this.width, this.height, 18);
-        // Subtle border
-        this.bgBar.lineStyle(2, 0x1E293B, 1);
-        this.bgBar.strokeRoundedRect(0, 0, this.width, this.height, 18);
+        this.bgBar.fillStyle(0x1E293B, 1);
+        this.bgBar.fillRoundedRect(-this.width / 2, -this.height / 2, this.width, this.height, 18);
+        this.bgBar.lineStyle(2, 0x0F172A, 1);
+        this.bgBar.strokeRoundedRect(-this.width / 2, -this.height / 2, this.width, this.height, 18);
 
-        const targetWidth = Math.min(this.width * percent, this.width);
+        const targetWidth = Math.max(0, Math.min(this.width * percent, this.width));
         
         if (!this.fillBar.getData('currentWidth')) {
             this.fillBar.setData('currentWidth', 0);
@@ -95,13 +91,11 @@ export class ProgressBarUI {
                 this.fillBar.clear();
                 this.glowBar.clear();
                 if (w > 0) {
-                    // Vibrant premium gradient
-                    this.fillBar.fillGradientStyle(0x60A5FA, 0x2563EB, 0x60A5FA, 0x2563EB, 1);
-                    this.fillBar.fillRoundedRect(0, 0, w, this.height, 18);
+                    this.fillBar.fillGradientStyle(0x3B82F6, 0x2563EB, 0x3B82F6, 0x2563EB, 1);
+                    this.fillBar.fillRoundedRect(-this.width / 2, -this.height / 2, w, this.height, 18);
                     
-                    // Soft glow underneath
-                    this.glowBar.fillStyle(0x3B82F6, 1);
-                    this.glowBar.fillRoundedRect(0, 0, w, this.height, 18);
+                    this.glowBar.fillStyle(0x60A5FA, 0.4);
+                    this.glowBar.fillRoundedRect(-this.width / 2, -this.height / 2, w, this.height, 18);
                 }
             }
         });

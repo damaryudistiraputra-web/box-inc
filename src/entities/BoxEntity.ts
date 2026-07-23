@@ -15,6 +15,7 @@ export class BoxEntity extends Phaser.GameObjects.Container implements IIncomeSo
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
         super(scene, x, y);
+        this.setName('boxEntity');
         this.boxId = 'box_' + Phaser.Math.RND.uuid();
 
         this.boxGraphics = scene.add.graphics();
