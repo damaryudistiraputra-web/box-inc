@@ -56,15 +56,14 @@ export class BoxEntity extends Phaser.GameObjects.Container implements IIncomeSo
             // Fast forward skip
             this.scene.tweens.killTweensOf(this);
             this.angle = 0;
-            this.scene.cameras.main.flash(200, 255, 215, 0);
-            this.setLevel(this.pendingFinalLevel);
-            this.isRevealing = false;
             this.setScale(1);
             return;
         }
-        // Visually bring to top during interaction without mutating display list array
-        // which can interrupt Phaser's drag event propagation.
-        this.setDepth(100);
+        
+        // We do not change depth here anymore because changing depth during pointerdown 
+        // forces the display list to resort, which breaks the Input Plugin's iteration 
+        // and aborts the subsequent drag event.
+        // InputController already handles depth on dragstart anyway.
     }
 
     private pendingFinalLevel: number = 1;
