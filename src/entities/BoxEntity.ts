@@ -62,11 +62,9 @@ export class BoxEntity extends Phaser.GameObjects.Container implements IIncomeSo
             this.setScale(1);
             return;
         }
-        if (this.parentContainer) {
-            this.parentContainer.bringToTop(this);
-        } else {
-            this.scene.children.bringToTop(this);
-        }
+        // Visually bring to top during interaction without mutating display list array
+        // which can interrupt Phaser's drag event propagation.
+        this.setDepth(100);
     }
 
     private pendingFinalLevel: number = 1;
