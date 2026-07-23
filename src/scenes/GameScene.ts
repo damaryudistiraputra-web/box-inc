@@ -188,11 +188,18 @@ export class GameScene extends Phaser.Scene {
         // Draws conveyor lines, pipes, and industrial floor BEHIND the cells
         this.drawFactoryFloor(gridContainer);
 
-        // Move all initial grid cells, decorations, and boxes into the scaled container
-        const snapshot = [...this.children.list]; // snapshot to avoid mutation during iteration
+        // Add background cells and decorations first (bottom layer)
+        const snapshot = [...this.children.list];
         snapshot.forEach(child => {
             const n = child.name;
-            if (n === 'gridCell' || n === 'gridCellDecor' || n === 'gridCellScan' || n === 'boxEntity') {
+            if (n === 'gridCell' || n === 'gridCellDecor' || n === 'gridCellScan') {
+                gridContainer.add(child);
+            }
+        });
+        
+        // Add boxes after so they render on top and receive pointer events
+        snapshot.forEach(child => {
+            if (child.name === 'boxEntity') {
                 gridContainer.add(child);
             }
         });
