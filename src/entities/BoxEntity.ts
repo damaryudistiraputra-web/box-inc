@@ -56,6 +56,9 @@ export class BoxEntity extends Phaser.GameObjects.Container implements IIncomeSo
             // Fast forward skip
             this.scene.tweens.killTweensOf(this);
             this.angle = 0;
+            this.scene.cameras.main.flash(200, 255, 215, 0);
+            this.setLevel(this.pendingFinalLevel);
+            this.isRevealing = false;
             this.setScale(1);
             return;
         }
