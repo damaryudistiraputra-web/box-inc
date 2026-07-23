@@ -12,8 +12,8 @@ export class ProgressBarUI {
     private stageText: Phaser.GameObjects.Text;
     private scoreText: Phaser.GameObjects.Text;
 
-    private width: number = 640; // Spans across the 720px screen
-    private height: number = 36; // Much taller for AAA feel
+    private width: number = 640;
+    private height: number = 46; // Thicker for premium feel
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
         this.scene = scene;

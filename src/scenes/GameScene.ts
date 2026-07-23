@@ -125,8 +125,8 @@ export class GameScene extends Phaser.Scene {
 
         // --- UI Container for Grid (Visual Scaling) ---
         // Layer 100
-        const gridContainer = this.add.container(this.cameras.main.centerX, this.cameras.main.centerY - 100);
-        gridContainer.setScale(1.7); // Scale up 70% to occupy ~65% of screen width/height
+        const gridContainer = this.add.container(this.cameras.main.centerX, this.cameras.main.centerY - 150);
+        gridContainer.setScale(1.85); // Scale up to fill ~70% of screen
         gridContainer.setDepth(100);
 
         // Move all initial grid cells and boxes into the scaled container
@@ -172,17 +172,17 @@ export class GameScene extends Phaser.Scene {
         // Income Boost UI (Zone 1 - Top Right)
         new IncomeBoostUI(this, this.cameras.main.width - 96, 48);
 
-        // Progress Bar (Factory) - Directly above the grid
-        new ProgressBarUI(this, this.cameras.main.centerX, 180);
+        // Progress Bar (Factory) - Tight above the grid
+        new ProgressBarUI(this, this.cameras.main.centerX, 130);
 
-        // Merge Meter UI (Delivery Truck) - Directly below the grid
-        new MergeMeterUI(this, this.cameras.main.centerX, 890);
+        // Shipment UI - Mission first, then truck progress below
+        new ShipmentUI(this, this.cameras.main.centerX, 860, this.shipmentManager, this.boxPool);
 
-        // Shipment UI (Permanent Bottom Panel) - Unified with Truck
-        new ShipmentUI(this, this.cameras.main.centerX, 990, this.shipmentManager, this.boxPool);
+        // Merge Meter UI (Delivery Truck) - Below shipment
+        new MergeMeterUI(this, this.cameras.main.centerX, 960);
 
-        // Shop UI at the bottom (Mega Button) - Docked with 16px safe margin
-        const shop = new ShopUI(this, this.cameras.main.centerX, this.cameras.main.height - 80);
+        // Shop UI at the bottom (Mega Button) - Tighter to logistics
+        const shop = new ShopUI(this, this.cameras.main.centerX, this.cameras.main.height - 65);
         shop.setDepth(500);
         
         // Stage Announcer (Layer 800)
