@@ -33,9 +33,10 @@ export class BoxEntity extends Phaser.GameObjects.Container implements IIncomeSo
 
         this.add([this.boxGraphics, this.emojiText, this.levelText]);
         
-        // Interactive zone for future drag & drop
+        // Interactive zone for drag & drop matching centered graphics
         this.setSize(BOX_SIZE, BOX_SIZE);
-        this.setInteractive();
+        const hitArea = new Phaser.Geom.Rectangle(-BOX_SIZE/2, -BOX_SIZE/2, BOX_SIZE, BOX_SIZE);
+        this.setInteractive(hitArea, Phaser.Geom.Rectangle.Contains);
 
         this.on('pointerdown', this.onPointerDown, this);
 
@@ -61,7 +62,11 @@ export class BoxEntity extends Phaser.GameObjects.Container implements IIncomeSo
             this.setScale(1);
             return;
         }
-        this.scene.children.bringToTop(this);
+        if (this.parentContainer) {
+            this.parentContainer.bringToTop(this);
+        } else {
+            this.scene.children.bringToTop(this);
+        }
     }
 
     private pendingFinalLevel: number = 1;
