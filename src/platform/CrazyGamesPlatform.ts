@@ -164,7 +164,15 @@ export class CrazyGamesPlatform implements IPlatform {
         const sdk = window.CrazyGames.SDK;
         sdk.game.sdkGameLoadingStart();
 
-        await sdk.init();
+        // Timeout guard: if not on CrazyGames portal, sdk.init() may hang
+        const initWithTimeout = Promise.race([
+            sdk.init(),
+            new Promise<void>((_, reject) =>
+                setTimeout(() => reject(new Error('[CrazyGamesPlatform] sdk.init() timed out — not on CrazyGames portal')), 3000)
+            )
+        ]);
+
+        await initWithTimeout;
 
         this.ads = new CrazyGamesAds();
         this.player = new CrazyGamesPlayer();
