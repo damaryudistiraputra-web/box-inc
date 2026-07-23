@@ -129,9 +129,10 @@ export class GameScene extends Phaser.Scene {
         gridContainer.setScale(1.85); // Scale up to fill ~70% of screen
         gridContainer.setDepth(100);
 
-        // Move all initial grid cells and boxes into the scaled container
+        // Move all initial grid cells, decorations, and boxes into the scaled container
         this.children.list.forEach(child => {
-            if (child.name === 'gridCell' || child.name === 'boxEntity') {
+            const n = child.name;
+            if (n === 'gridCell' || n === 'gridCellDecor' || n === 'gridCellScan' || n === 'boxEntity') {
                 gridContainer.add(child);
             }
         });
