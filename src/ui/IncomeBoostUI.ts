@@ -10,25 +10,30 @@ export class IncomeBoostUI {
     private scene: Phaser.Scene;
     private container: Phaser.GameObjects.Container;
     private text: Phaser.GameObjects.Text;
-    private bg: Phaser.GameObjects.Rectangle;
+    private bg: Phaser.GameObjects.Graphics;
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
         this.scene = scene;
         this.container = this.scene.add.container(x, y).setDepth(1500);
 
-        this.bg = this.scene.add.rectangle(0, 0, 150, 40, 0x00AA00, 1)
-            .setInteractive({ useHandCursor: true })
-            .setOrigin(0.5);
+        this.bg = this.scene.add.graphics();
+        // Setup initial shape
+        this.drawBg(0x1E293B, 0x334155);
 
-        this.text = this.scene.add.text(0, 0, 'Boost: Off\n(Watch Ad)', {
-            font: 'bold 12px Arial',
+        this.text = this.scene.add.text(0, 0, 'Boost: Off\n(+Watch Ad)', {
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+            fontSize: '14px',
+            fontStyle: 'bold',
             color: '#FFFFFF',
-            align: 'center'
-        }).setOrigin(0.5);
+            align: 'center',
+            shadow: { offsetX: 0, offsetY: 1, color: '#000000', blur: 2, fill: true }
+        }).setOrigin(0.5, 0.5);
 
-        this.container.add([this.bg, this.text]);
+        // Invisible hit area for clicks
+        const hitArea = this.scene.add.zone(0, 0, 160, 48).setInteractive({ useHandCursor: true });
+        hitArea.on('pointerdown', () => this.onClick());
 
-        this.bg.on('pointerdown', () => this.onClick());
+        this.container.add([this.bg, this.text, hitArea]);
 
         this.scene.time.addEvent({
             delay: 1000,
@@ -40,6 +45,15 @@ export class IncomeBoostUI {
         this.updateUI();
         
         this.scene.events.once('shutdown', this.destroy, this);
+    }
+
+    private drawBg(fillColor: number, strokeColor: number, isGlowing: boolean = false) {
+        this.bg.clear();
+        this.bg.fillStyle(fillColor, 1);
+        this.bg.fillRoundedRect(-80, -24, 160, 48, 24); // 160x48 centered
+        
+        this.bg.lineStyle(isGlowing ? 3 : 2, strokeColor, 1);
+        this.bg.strokeRoundedRect(-80, -24, 160, 48, 24);
     }
     
     private destroy() {
@@ -58,11 +72,13 @@ export class IncomeBoostUI {
             const min = Math.floor(state.remainingMs / 60000);
             const sec = Math.floor((state.remainingMs % 60000) / 1000);
             const timeStr = `${min}:${sec.toString().padStart(2, '0')}`;
-            this.text.setText(`Boost ${state.multiplier}x: ${timeStr}\n(+ Extend)`);
-            this.bg.setFillStyle(0xAA6600);
+            this.text.setText(`⚡ ${state.multiplier}x Boost\n${timeStr}`);
+            // Active: Orange Gradient feel
+            this.drawBg(0xF59E0B, 0xD97706, true);
         } else {
-            this.text.setText(`Boost: Off\n(+${AdsBalance.incomeBoostMinutes}m Ad)`);
-            this.bg.setFillStyle(0x00AA00);
+            this.text.setText(`⚡ Boost Off\n(+${AdsBalance.incomeBoostMinutes}m Ad)`);
+            // Inactive: Dark slate
+            this.drawBg(0x1E293B, 0x334155, false);
         }
     }
 
@@ -78,11 +94,19 @@ export class IncomeBoostUI {
             }
         };
 
+        // Click animation
+        this.scene.tweens.add({
+            targets: this.container,
+            scaleX: 0.9,
+            scaleY: 0.9,
+            duration: 100,
+            yoyo: true
+        });
+
         AdsManager.getInstance().showRewarded(
             RewardSource.SYSTEM,
             bundle,
             () => {
-                // RewardManager already handles applying the boost.
                 this.updateUI();
             },
             (err) => {

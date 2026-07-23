@@ -4,39 +4,47 @@ import { EventBus, EVENTS } from '../core/EventBus';
 export class ResourceTrackerUI extends Phaser.GameObjects.Container {
     private resourceId: string;
     private balanceText: Phaser.GameObjects.Text;
-    private labelText: Phaser.GameObjects.Text;
+    private iconText: Phaser.GameObjects.Text;
+    private bg: Phaser.GameObjects.Graphics;
 
-    constructor(scene: Phaser.Scene, x: number, y: number, resourceId: string, label: string) {
+    constructor(scene: Phaser.Scene, x: number, y: number, resourceId: string) {
         super(scene, x, y);
         this.resourceId = resourceId;
 
-        const bg = scene.add.graphics();
-        bg.fillStyle(0x000000, 0.5);
-        bg.fillRoundedRect(0, -10, 150, 40, 20);
+        // Premium Dark Glassmorphism Background
+        this.bg = scene.add.graphics();
+        this.drawBg(200); // Initial width
 
-        this.labelText = scene.add.text(15, 0, label, {
-            fontFamily: 'Arial',
-            fontSize: '16px',
-            color: '#aaaaaa'
-        });
+        this.iconText = scene.add.text(16, 0, '💵', {
+            fontSize: '24px'
+        }).setOrigin(0, 0.5);
 
-        this.balanceText = scene.add.text(this.labelText.x + this.labelText.width + 5, 0, '0', {
-            fontFamily: 'Arial',
-            fontSize: '18px',
+        this.balanceText = scene.add.text(50, 0, '0', {
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+            fontSize: '24px',
             fontStyle: 'bold',
-            color: '#44ffa5'
-        });
+            color: '#10B981', // Vibrant Green
+            stroke: '#059669',
+            strokeThickness: 2,
+            shadow: { offsetX: 0, offsetY: 2, color: '#000000', blur: 4, fill: true }
+        }).setOrigin(0, 0.5);
 
-        this.add([bg, this.labelText, this.balanceText]);
+        this.add([this.bg, this.iconText, this.balanceText]);
         scene.add.existing(this);
 
         this.setupListeners();
     }
 
+    private drawBg(width: number) {
+        this.bg.clear();
+        this.bg.fillStyle(0x1E293B, 0.85); // Slate 800 with opacity
+        this.bg.fillRoundedRect(0, -24, width, 48, 24);
+        this.bg.lineStyle(2, 0x334155, 1); // Slate 700 border
+        this.bg.strokeRoundedRect(0, -24, width, 48, 24);
+    }
+
     private setupListeners(): void {
         EventBus.on(EVENTS.RESOURCE_CHANGED, this.onResourceChanged, this);
-        
-        // Cleanup on destroy
         this.on('destroy', () => {
             EventBus.off(EVENTS.RESOURCE_CHANGED, this.onResourceChanged, this);
         });
@@ -46,13 +54,18 @@ export class ResourceTrackerUI extends Phaser.GameObjects.Container {
         if (payload.id === this.resourceId) {
             this.balanceText.setText(payload.amount.toString());
             
-            // Pop animation on text
+            // Adjust background width dynamically based on text size + padding
+            const newWidth = Math.max(200, 50 + this.balanceText.width + 24);
+            this.drawBg(newWidth);
+            
+            // Subtle, satisfying pop animation
             this.scene.tweens.add({
                 targets: this.balanceText,
-                scaleX: 1.2,
-                scaleY: 1.2,
+                scaleX: 1.15,
+                scaleY: 1.15,
                 yoyo: true,
-                duration: 100
+                duration: 120,
+                ease: 'Sine.easeInOut'
             });
         }
     }

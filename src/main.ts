@@ -7,8 +7,8 @@ import { PlatformManager } from './platform/PlatformManager';
 
 const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
-    width: 600,
-    height: 900,
+    width: 720,
+    height: 1280,
     parent: 'game-container',
     backgroundColor: '#1a1a2e',
     scale: {

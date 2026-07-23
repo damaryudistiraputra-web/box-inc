@@ -2,7 +2,6 @@ import Phaser from 'phaser';
 import { EventBus, EVENTS } from '../core/EventBus';
 import { AnimationManager } from '../managers/AnimationManager';
 import { LocalizationManager } from '../managers/LocalizationManager';
-
 import { ShopManager } from '../managers/ShopManager';
 
 export class ShopUI extends Phaser.GameObjects.Container {
@@ -12,34 +11,45 @@ export class ShopUI extends Phaser.GameObjects.Container {
     private lastClickTime: number = 0;
     private cooldownMs: number = 250;
     
+    private buttonWidth: number = 576; // 80% of 720px
+    private buttonHeight: number = 80; // Massive button
+
     constructor(scene: Phaser.Scene, x: number, y: number) {
         super(scene, x, y);
 
         this.buttonBg = scene.add.graphics();
-        this.buttonBg.fillStyle(0x33aa44, 1);
-        this.buttonBg.fillRoundedRect(-85, -30, 170, 60, 30); // Pill shape
-        this.buttonBg.lineStyle(3, 0x66ff88, 1);
-        this.buttonBg.strokeRoundedRect(-85, -30, 170, 60, 30);
+        
+        // Massive Green Pill
+        this.buttonBg.fillStyle(0x10B981, 1);
+        this.buttonBg.fillRoundedRect(-this.buttonWidth / 2, -this.buttonHeight / 2, this.buttonWidth, this.buttonHeight, 40);
+        this.buttonBg.lineStyle(4, 0x34D399, 1);
+        this.buttonBg.strokeRoundedRect(-this.buttonWidth / 2, -this.buttonHeight / 2, this.buttonWidth, this.buttonHeight, 40);
 
-        this.buttonText = scene.add.text(0, -10, LocalizationManager.t('shop.buy').toUpperCase(), {
-            fontFamily: 'Arial',
-            fontSize: '20px',
+        this.buttonText = scene.add.text(0, -12, LocalizationManager.t('shop.buy').toUpperCase() + ' NEW BOX', {
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+            fontSize: '28px',
             fontStyle: 'bold',
-            color: '#ffffff'
+            color: '#FFFFFF',
+            shadow: { offsetX: 0, offsetY: 2, color: '#047857', blur: 0, fill: true }
         }).setOrigin(0.5);
         
-        this.priceText = scene.add.text(0, 12, '$0', {
-            fontFamily: 'Arial',
-            fontSize: '16px',
+        this.priceText = scene.add.text(0, 20, '$0', {
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+            fontSize: '20px',
             fontStyle: 'bold',
-            color: '#cfffdf'
+            color: '#D1FAE5'
         }).setOrigin(0.5);
 
-        this.add([this.buttonBg, this.buttonText, this.priceText]);
+        // Add a subtle glow effect behind the button
+        const glow = scene.add.graphics();
+        glow.fillStyle(0x10B981, 0.2);
+        glow.fillRoundedRect(-this.buttonWidth / 2 - 10, -this.buttonHeight / 2 - 10, this.buttonWidth + 20, this.buttonHeight + 20, 50);
+
+        this.add([glow, this.buttonBg, this.buttonText, this.priceText]);
         
         AnimationManager.addHoverBounce(scene, this);
 
-        this.setSize(170, 60);
+        this.setSize(this.buttonWidth, this.buttonHeight);
         this.setInteractive();
 
         this.on('pointerdown', this.onPointerDown, this);

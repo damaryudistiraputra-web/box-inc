@@ -11,8 +11,8 @@ export class ProgressBarUI {
     private stageText: Phaser.GameObjects.Text;
     private scoreText: Phaser.GameObjects.Text;
 
-    private width: number = 300;
-    private height: number = 20;
+    private width: number = 640; // Spans across the 720px screen
+    private height: number = 24;
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
         this.scene = scene;
@@ -20,16 +20,23 @@ export class ProgressBarUI {
         this.bgBar = this.scene.add.graphics();
         this.fillBar = this.scene.add.graphics();
         
-        this.stageText = this.scene.add.text(this.width / 2, -15, '', { 
-            font: '16px Arial', 
-            color: '#ffffff',
-            fontStyle: 'bold'
+        // Factory Title is centered above the bar
+        this.stageText = this.scene.add.text(this.width / 2, -20, '', { 
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+            fontSize: '22px', 
+            color: '#F8FAFC',
+            fontStyle: 'bold',
+            shadow: { offsetX: 0, offsetY: 2, color: '#000000', blur: 4, fill: true }
         }).setOrigin(0.5);
 
-        this.scoreText = this.scene.add.text(this.width / 2, 10, '', { 
-            font: '12px Arial', 
-            color: '#ffffff'
-        }).setOrigin(0.5);
+        // Score is centered inside the bar
+        this.scoreText = this.scene.add.text(this.width / 2, this.height / 2, '', { 
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+            fontSize: '14px',
+            fontStyle: 'bold', 
+            color: '#FFFFFF',
+            shadow: { offsetX: 0, offsetY: 1, color: '#000000', blur: 2, fill: true }
+        }).setOrigin(0.5).setDepth(10);
 
         this.container = this.scene.add.container(x, y, [this.bgBar, this.fillBar, this.stageText, this.scoreText]);
 
@@ -52,15 +59,15 @@ export class ProgressBarUI {
 
     private drawBar(percent: number) {
         this.bgBar.clear();
-        this.bgBar.fillStyle(0x1a2a3a);
-        this.bgBar.fillRoundedRect(0, 0, this.width, this.height, 10);
-        this.bgBar.lineStyle(2, 0x44aaff, 1);
-        this.bgBar.strokeRoundedRect(0, 0, this.width, this.height, 10);
+        // Dark translucent background
+        this.bgBar.fillStyle(0x0F172A, 0.8);
+        this.bgBar.fillRoundedRect(0, 0, this.width, this.height, 12);
+        // Subtle border
+        this.bgBar.lineStyle(2, 0x1E293B, 1);
+        this.bgBar.strokeRoundedRect(0, 0, this.width, this.height, 12);
 
-        // We use a tween instead of redrawing instantly
         const targetWidth = Math.min(this.width * percent, this.width);
         
-        // Ensure fillBar starts somewhere
         if (!this.fillBar.getData('currentWidth')) {
             this.fillBar.setData('currentWidth', 0);
         }
@@ -68,14 +75,15 @@ export class ProgressBarUI {
         this.scene.tweens.add({
             targets: this.fillBar,
             currentWidth: targetWidth,
-            duration: 400,
+            duration: 300,
             ease: 'Cubic.easeOut',
             onUpdate: (tween) => {
                 const w = tween.getValue() as number;
                 this.fillBar.clear();
                 if (w > 0) {
-                    this.fillBar.fillStyle(0x44aa44);
-                    this.fillBar.fillRoundedRect(0, 0, w, this.height, 10);
+                    // Vibrant blue gradient for progress
+                    this.fillBar.fillGradientStyle(0x3B82F6, 0x2563EB, 0x3B82F6, 0x2563EB, 1);
+                    this.fillBar.fillRoundedRect(0, 0, w, this.height, 12);
                 }
             }
         });
@@ -86,7 +94,7 @@ export class ProgressBarUI {
         const currentStage = pm.getCurrentStage();
         const nextStage = pm.getNextStage();
 
-        this.stageText.setText(currentStage.name);
+        this.stageText.setText(`🏭 ${currentStage.name}`);
 
         if (nextStage) {
             const currentThreshold = currentStage.threshold;
@@ -96,23 +104,23 @@ export class ProgressBarUI {
             const percent = progress / required;
             
             this.drawBar(percent);
-            this.scoreText.setText(`${score} / ${nextThreshold}`);
+            const percentText = Math.floor(percent * 100);
+            this.scoreText.setText(`${score} / ${nextThreshold} (${percentText}%)`);
         } else {
-            // Max stage
             this.drawBar(1);
             this.scoreText.setText(`MAX LEVEL (${score})`);
         }
     }
 
     private onStageAdvanced(data: { stage: StageInfo, previousStageId: number }) {
-        this.stageText.setText(data.stage.name);
+        this.stageText.setText(`🏭 ${data.stage.name}`);
         
-        // Simple scale pop animation
+        // Satisfying pop animation when stage advances
         this.scene.tweens.add({
             targets: this.container,
-            scaleX: 1.15,
-            scaleY: 1.15,
-            duration: 200,
+            scaleX: 1.05,
+            scaleY: 1.05,
+            duration: 250,
             yoyo: true,
             ease: 'Back.easeOut'
         });

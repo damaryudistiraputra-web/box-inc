@@ -6,24 +6,23 @@ import { FeatureGate } from '../managers/FeatureGate';
 export class MergeMeterUI {
     private scene: Phaser.Scene;
     private container: Phaser.GameObjects.Container;
-    private bgBar: Phaser.GameObjects.Rectangle;
-    private fillBar: Phaser.GameObjects.Rectangle;
+    private bgBar: Phaser.GameObjects.Graphics;
+    private fillBar: Phaser.GameObjects.Graphics;
     private icon: Phaser.GameObjects.Text;
     
-    private width = 200;
-    private height = 15;
+    private width = 640; // Span the screen
+    private height = 24;
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
         this.scene = scene;
 
-        this.bgBar = this.scene.add.rectangle(0, 0, this.width, this.height, 0x222222, 1)
-            .setOrigin(0, 0.5)
-            .setStrokeStyle(2, 0xFFD700);
-            
-        this.fillBar = this.scene.add.rectangle(0, 0, 0, this.height, 0xFFD700, 1)
-            .setOrigin(0, 0.5);
+        this.bgBar = this.scene.add.graphics();
+        this.fillBar = this.scene.add.graphics();
 
-        this.icon = this.scene.add.text(-25, 0, '🚚', { fontSize: '20px' }).setOrigin(0.5);
+        this.drawBg();
+
+        // Icon floats slightly above/on the left of the bar
+        this.icon = this.scene.add.text(-20, 0, '🚚', { fontSize: '28px' }).setOrigin(0.5);
 
         this.container = this.scene.add.container(x, y, [this.bgBar, this.fillBar, this.icon]);
         
@@ -32,12 +31,28 @@ export class MergeMeterUI {
 
         // Initialize state
         const val = MergeMeterManager.getInstance().getMeterValue();
-        this.fillBar.width = (val / 100) * this.width;
+        this.drawFill((val / 100) * this.width);
 
         EventBus.on('MERGE_METER_UPDATED', this.onMeterUpdated, this);
         EventBus.on('STAGE_ADVANCED', this.checkUnlock, this);
         
         this.scene.events.once('shutdown', this.destroy, this);
+    }
+
+    private drawBg() {
+        this.bgBar.clear();
+        this.bgBar.fillStyle(0x0F172A, 0.8);
+        this.bgBar.fillRoundedRect(0, -this.height / 2, this.width, this.height, 12);
+        this.bgBar.lineStyle(2, 0xF59E0B, 0.5); // Subtle orange border
+        this.bgBar.strokeRoundedRect(0, -this.height / 2, this.width, this.height, 12);
+    }
+
+    private drawFill(w: number) {
+        this.fillBar.clear();
+        if (w > 0) {
+            this.fillBar.fillGradientStyle(0xFCD34D, 0xF59E0B, 0xFCD34D, 0xF59E0B, 1);
+            this.fillBar.fillRoundedRect(0, -this.height / 2, w, this.height, 12);
+        }
     }
     
     private destroy() {
@@ -54,14 +69,25 @@ export class MergeMeterUI {
     private onMeterUpdated(value: number) {
         if (!this.container.visible) return;
 
-        // Tween the fill
+        // Ensure currentWidth is initialized
+        if (!this.fillBar.getData('currentWidth')) {
+            this.fillBar.setData('currentWidth', 0);
+        }
+
         const targetWidth = (value / 100) * this.width;
         
         this.scene.tweens.add({
             targets: this.fillBar,
-            width: targetWidth,
+            currentWidth: targetWidth,
             duration: 300,
-            ease: 'Cubic.easeOut'
+            ease: 'Cubic.easeOut',
+            onUpdate: (tween) => {
+                const w = tween.getValue() as number;
+                this.drawFill(w);
+                
+                // Move truck icon along the bar
+                this.icon.setX(w - 10);
+            }
         });
 
         // Flash icon

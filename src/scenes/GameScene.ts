@@ -121,8 +121,8 @@ export class GameScene extends Phaser.Scene {
             this.economyManager.registerSource(box);
         });
 
-        // 2. Build Grid
-        this.gridSystem.createGrid(this.cameras.main.centerX, this.cameras.main.centerY - 50);
+        // 2. Build Grid - Centered in the available space (Zone 3)
+        this.gridSystem.createGrid(this.cameras.main.centerX, this.cameras.main.centerY - 100);
 
         // --- Spawn Manager ---
         this.spawnManager = new SpawnManager(this.gridSystem, this.boxPool, this.inputController);
@@ -148,25 +148,25 @@ export class GameScene extends Phaser.Scene {
         });
 
         // 4. Build UI
-        new ResourceTrackerUI(this, 20, 30, 'money', 'Money: $');
+        new ResourceTrackerUI(this, 16, 48, 'money');
         
-        // Move Progress Bar down to its own row
-        new ProgressBarUI(this, this.cameras.main.centerX - 150, 75);
+        // Progress Bar (Zone 2 - Below Top Bar)
+        new ProgressBarUI(this, this.cameras.main.centerX, 140);
         
-        // Income Boost UI (top right)
-        new IncomeBoostUI(this, this.cameras.main.width - 90, 30);
+        // Income Boost UI (Zone 1 - Top Right)
+        new IncomeBoostUI(this, this.cameras.main.width - 96, 48);
 
-        // Shop UI at the bottom
+        // Shop UI at the bottom (Mega Button)
         new ShopUI(this, this.cameras.main.centerX, this.cameras.main.height - 80);
         
         // Stage Announcer
         new StageAnnouncerUI(this);
 
-        // Merge Meter UI (Delivery Truck) - Moved up slightly
+        // Merge Meter UI (Delivery Truck) - Above Mega Button
         new MergeMeterUI(this, this.cameras.main.centerX, this.cameras.main.height - 180);
 
-        // Shipment UI (Side panel, moved higher to avoid truck overlap)
-        new ShipmentUI(this, this.cameras.main.width - 110, this.cameras.main.height - 300, this.shipmentManager, this.boxPool);
+        // Shipment UI (Permanent Bottom Panel) - Above Delivery Truck
+        new ShipmentUI(this, this.cameras.main.centerX, this.cameras.main.height - 300, this.shipmentManager, this.boxPool);
 
         // GoldenTruckEventUI
         new GoldenTruckEventUI(this);
