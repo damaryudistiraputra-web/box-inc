@@ -1,17 +1,20 @@
 import type { IPlatform, IAnalyticsProvider, IAdsProvider, IPlayerProvider, IStorageProvider, ILocalizationProvider, IDeviceInfo } from './interfaces';
 import { WebPlatform } from './WebPlatform';
 import { YandexPlatform } from './YandexPlatform';
+import { CrazyGamesPlatform } from './CrazyGamesPlatform';
 
 export class PlatformManager {
     private static instance: PlatformManager;
     private platform!: IPlatform;
 
     private constructor() {
-        // Simple platform detection
+        // Platform detection priority: Yandex > CrazyGames > Web
         const urlParams = new URLSearchParams(window.location.search);
-        // Sometimes yandex adds params, or we can check window.ysdk
         if (typeof (window as any).ysdk !== 'undefined' || urlParams.has('yandex')) {
             this.platform = new YandexPlatform();
+        } else if (typeof (window as any).CrazyGames !== 'undefined') {
+            // CrazyGames SDK script already loaded in index.html
+            this.platform = new CrazyGamesPlatform();
         } else {
             this.platform = new WebPlatform();
         }
