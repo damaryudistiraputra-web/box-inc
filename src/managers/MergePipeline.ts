@@ -57,6 +57,7 @@ export class MergePipeline {
             targetBox.setLevel(newLevel);
             
             EventBus.emit(EVENTS.BOX_LEVEL_UP, { box: targetBox, level: newLevel, col: targetCol, row: targetRow });
+            EventBus.emit('PLAY_SOUND', 'ui_merge');
             
             // 3. Add a quick pop animation to the target box
             targetBox.scene.tweens.add({

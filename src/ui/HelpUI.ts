@@ -4,19 +4,25 @@ export class HelpUI {
     private scene: Phaser.Scene;
     private modal: Phaser.GameObjects.Container;
     
+    private btnContainer: Phaser.GameObjects.Container;
+    
     constructor(scene: Phaser.Scene, x: number, y: number) {
         this.scene = scene;
         
         // Help Button (?)
         const btnBg = this.scene.add.circle(0, 0, 16, 0x334455).setInteractive({ useHandCursor: true }).setStrokeStyle(2, 0x6688aa);
         const btnText = this.scene.add.text(0, 0, '?', { font: 'bold 18px Arial', color: '#ffffff' }).setOrigin(0.5);
-        this.scene.add.container(x, y, [btnBg, btnText]);
+        this.btnContainer = this.scene.add.container(x, y, [btnBg, btnText]);
         
         btnBg.on('pointerdown', () => this.openHelp());
         btnBg.on('pointerover', () => btnBg.setFillStyle(0x445566));
         btnBg.on('pointerout', () => btnBg.setFillStyle(0x334455));
 
         this.modal = this.createModal();
+    }
+    
+    public setDepth(depth: number) {
+        this.btnContainer.setDepth(depth);
     }
     
     private createModal(): Phaser.GameObjects.Container {

@@ -55,6 +55,38 @@ export class ShopUI extends Phaser.GameObjects.Container {
         this.on('pointerdown', this.onPointerDown, this);
         this.on('pointerup', this.onPointerUp, this);
         this.on('pointerout', this.onPointerOut, this);
+        
+        // --- Shine Animation ---
+        const shine = scene.add.graphics();
+        shine.fillStyle(0xffffff, 0.3);
+        // Slanted shine shape
+        shine.beginPath();
+        shine.moveTo(-30, -this.buttonHeight);
+        shine.lineTo(30, -this.buttonHeight);
+        shine.lineTo(0, this.buttonHeight);
+        shine.lineTo(-60, this.buttonHeight);
+        shine.closePath();
+        shine.fillPath();
+        
+        // Add to container and mask it to button shape
+        const shapeMask = scene.make.graphics({ x: this.x, y: this.y }, false);
+        shapeMask.fillStyle(0xffffff);
+        shapeMask.fillRoundedRect(-this.buttonWidth / 2, -this.buttonHeight / 2, this.buttonWidth, this.buttonHeight, 40);
+        const mask = shapeMask.createGeometryMask();
+        shine.setMask(mask);
+        
+        this.add(shine);
+        
+        // Shine tween every 4s
+        shine.setX(-this.buttonWidth);
+        scene.tweens.add({
+            targets: shine,
+            x: this.buttonWidth,
+            duration: 500,
+            ease: 'Power1',
+            repeat: -1,
+            repeatDelay: 4000
+        });
 
         scene.add.existing(this);
         
@@ -68,11 +100,27 @@ export class ShopUI extends Phaser.GameObjects.Container {
     }
 
     private onPointerDown(): void {
-        // AnimationManager handles visual scale
+        EventBus.emit('PLAY_SOUND', 'ui_click');
+        // Click Bounce (80ms)
+        this.scene.tweens.add({
+            targets: this,
+            scaleX: 0.9,
+            scaleY: 0.9,
+            duration: 80,
+            yoyo: true,
+            ease: 'Sine.easeInOut'
+        });
     }
 
     private onPointerOut(): void {
-        // AnimationManager handles visual scale
+        this.scene.tweens.killTweensOf(this);
+        this.scene.tweens.add({
+            targets: this,
+            scaleX: 1,
+            scaleY: 1,
+            duration: 80,
+            ease: 'Sine.easeOut'
+        });
     }
 
     private onPointerUp(): void {

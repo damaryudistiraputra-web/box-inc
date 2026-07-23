@@ -8,22 +8,24 @@ export class ProgressBarUI {
     private container: Phaser.GameObjects.Container;
     private bgBar: Phaser.GameObjects.Graphics;
     private fillBar: Phaser.GameObjects.Graphics;
+    private glowBar: Phaser.GameObjects.Graphics;
     private stageText: Phaser.GameObjects.Text;
     private scoreText: Phaser.GameObjects.Text;
 
     private width: number = 640; // Spans across the 720px screen
-    private height: number = 24;
+    private height: number = 36; // Much taller for AAA feel
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
         this.scene = scene;
 
         this.bgBar = this.scene.add.graphics();
+        this.glowBar = this.scene.add.graphics(); // Behind fill for ambient glow
         this.fillBar = this.scene.add.graphics();
         
         // Factory Title is centered above the bar
-        this.stageText = this.scene.add.text(this.width / 2, -20, '', { 
+        this.stageText = this.scene.add.text(this.width / 2, -26, '', { 
             fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-            fontSize: '22px', 
+            fontSize: '24px', 
             color: '#F8FAFC',
             fontStyle: 'bold',
             shadow: { offsetX: 0, offsetY: 2, color: '#000000', blur: 4, fill: true }
@@ -32,15 +34,26 @@ export class ProgressBarUI {
         // Score is centered inside the bar
         this.scoreText = this.scene.add.text(this.width / 2, this.height / 2, '', { 
             fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-            fontSize: '14px',
+            fontSize: '16px',
             fontStyle: 'bold', 
             color: '#FFFFFF',
             shadow: { offsetX: 0, offsetY: 1, color: '#000000', blur: 2, fill: true }
         }).setOrigin(0.5).setDepth(10);
 
-        this.container = this.scene.add.container(x, y, [this.bgBar, this.fillBar, this.stageText, this.scoreText]);
+        this.container = this.scene.add.container(x, y, [this.bgBar, this.glowBar, this.fillBar, this.stageText, this.scoreText]);
+        this.container.setDepth(500);
 
         this.drawBar(0);
+
+        // Ambient glow loop (2.5s)
+        this.scene.tweens.add({
+            targets: this.glowBar,
+            alpha: { from: 0.3, to: 0.8 },
+            duration: 2500,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+        });
 
         EventBus.on(EVENTS.PROGRESSION_SCORE_UPDATED, this.updateProgress, this);
         EventBus.on(EVENTS.STAGE_ADVANCED, this.onStageAdvanced, this);
@@ -60,11 +73,11 @@ export class ProgressBarUI {
     private drawBar(percent: number) {
         this.bgBar.clear();
         // Dark translucent background
-        this.bgBar.fillStyle(0x0F172A, 0.8);
-        this.bgBar.fillRoundedRect(0, 0, this.width, this.height, 12);
+        this.bgBar.fillStyle(0x0F172A, 0.85);
+        this.bgBar.fillRoundedRect(0, 0, this.width, this.height, 18);
         // Subtle border
         this.bgBar.lineStyle(2, 0x1E293B, 1);
-        this.bgBar.strokeRoundedRect(0, 0, this.width, this.height, 12);
+        this.bgBar.strokeRoundedRect(0, 0, this.width, this.height, 18);
 
         const targetWidth = Math.min(this.width * percent, this.width);
         
@@ -80,10 +93,15 @@ export class ProgressBarUI {
             onUpdate: (tween) => {
                 const w = tween.getValue() as number;
                 this.fillBar.clear();
+                this.glowBar.clear();
                 if (w > 0) {
-                    // Vibrant blue gradient for progress
-                    this.fillBar.fillGradientStyle(0x3B82F6, 0x2563EB, 0x3B82F6, 0x2563EB, 1);
-                    this.fillBar.fillRoundedRect(0, 0, w, this.height, 12);
+                    // Vibrant premium gradient
+                    this.fillBar.fillGradientStyle(0x60A5FA, 0x2563EB, 0x60A5FA, 0x2563EB, 1);
+                    this.fillBar.fillRoundedRect(0, 0, w, this.height, 18);
+                    
+                    // Soft glow underneath
+                    this.glowBar.fillStyle(0x3B82F6, 1);
+                    this.glowBar.fillRoundedRect(0, 0, w, this.height, 18);
                 }
             }
         });
@@ -101,7 +119,7 @@ export class ProgressBarUI {
             const nextThreshold = nextStage.threshold;
             const progress = score - currentThreshold;
             const required = nextThreshold - currentThreshold;
-            const percent = progress / required;
+            const percent = Math.max(0, progress / required);
             
             this.drawBar(percent);
             const percentText = Math.floor(percent * 100);
@@ -114,6 +132,7 @@ export class ProgressBarUI {
 
     private onStageAdvanced(data: { stage: StageInfo, previousStageId: number }) {
         this.stageText.setText(`🏭 ${data.stage.name}`);
+        EventBus.emit('PLAY_SOUND', 'ui_upgrade');
         
         // Satisfying pop animation when stage advances
         this.scene.tweens.add({

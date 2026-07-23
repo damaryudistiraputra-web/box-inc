@@ -6,10 +6,13 @@ export class ResourceTrackerUI extends Phaser.GameObjects.Container {
     private balanceText: Phaser.GameObjects.Text;
     private iconText: Phaser.GameObjects.Text;
     private bg: Phaser.GameObjects.Graphics;
+    
+    private currentVisualAmount: number = 0;
 
     constructor(scene: Phaser.Scene, x: number, y: number, resourceId: string) {
         super(scene, x, y);
         this.resourceId = resourceId;
+        this.setDepth(500); // UI Layer
 
         // Premium Dark Glassmorphism Background
         this.bg = scene.add.graphics();
@@ -52,17 +55,29 @@ export class ResourceTrackerUI extends Phaser.GameObjects.Container {
 
     private onResourceChanged(payload: { id: string, amount: bigint, delta: bigint }): void {
         if (payload.id === this.resourceId) {
-            this.balanceText.setText(payload.amount.toString());
+            const targetAmount = Number(payload.amount);
             
-            // Adjust background width dynamically based on text size + padding
-            const newWidth = Math.max(200, 50 + this.balanceText.width + 24);
-            this.drawBg(newWidth);
+            // Rolling number animation
+            this.scene.tweens.addCounter({
+                from: this.currentVisualAmount,
+                to: targetAmount,
+                duration: 250,
+                ease: 'Cubic.easeOut',
+                onUpdate: (tween) => {
+                    this.currentVisualAmount = Math.floor(tween.getValue() as number);
+                    this.balanceText.setText(this.currentVisualAmount.toString());
+                    
+                    // Adjust background width dynamically based on text size + padding
+                    const newWidth = Math.max(200, 50 + this.balanceText.width + 24);
+                    this.drawBg(newWidth);
+                }
+            });
             
-            // Subtle, satisfying pop animation
+            // Subtle pop animation
             this.scene.tweens.add({
                 targets: this.balanceText,
-                scaleX: 1.15,
-                scaleY: 1.15,
+                scaleX: 1.1,
+                scaleY: 1.1,
                 yoyo: true,
                 duration: 120,
                 ease: 'Sine.easeInOut'

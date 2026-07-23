@@ -12,27 +12,56 @@ export class GridCell extends Phaser.GameObjects.Graphics {
         this.cellSize = size;
 
         this.drawNormal();
+        
+        // Ensure interactive for hover events (120ms)
+        this.setInteractive(new Phaser.Geom.Rectangle(-this.cellSize/2, -this.cellSize/2, this.cellSize, this.cellSize), Phaser.Geom.Rectangle.Contains);
+        
+        this.on('pointerover', this.onHover, this);
+        this.on('pointerout', this.onHoverOut, this);
+        
         scene.add.existing(this);
     }
 
     private drawNormal(): void {
         this.clear();
-        this.fillStyle(0x000000, 0.4);
-        this.fillRoundedRect(-this.cellSize / 2, -this.cellSize / 2, this.cellSize, this.cellSize, 12);
+        // Indented premium look (Dark Slate gradient simulation)
+        this.fillGradientStyle(0x0F172A, 0x0F172A, 0x1E293B, 0x1E293B, 0.6);
+        this.fillRoundedRect(-this.cellSize / 2, -this.cellSize / 2, this.cellSize, this.cellSize, 16);
         
-        this.lineStyle(2, 0xffffff, 0.1);
-        this.strokeRoundedRect(-this.cellSize / 2, -this.cellSize / 2, this.cellSize, this.cellSize, 12);
+        // Soft subtle border
+        this.lineStyle(2, 0x334155, 0.4);
+        this.strokeRoundedRect(-this.cellSize / 2, -this.cellSize / 2, this.cellSize, this.cellSize, 16);
+    }
+
+    private onHover(): void {
+        this.scene.tweens.add({
+            targets: this,
+            scaleX: 1.05,
+            scaleY: 1.05,
+            duration: 120,
+            ease: 'Sine.easeOut'
+        });
+    }
+
+    private onHoverOut(): void {
+        this.scene.tweens.add({
+            targets: this,
+            scaleX: 1,
+            scaleY: 1,
+            duration: 120,
+            ease: 'Sine.easeIn'
+        });
     }
 
     public setHighlight(isValid: boolean): void {
         this.clear();
-        const color = isValid ? 0x00ff00 : 0xff0000;
+        const color = isValid ? 0x10B981 : 0xEF4444; // Green or Red
         
-        this.fillStyle(color, 0.4);
-        this.fillRoundedRect(-this.cellSize / 2, -this.cellSize / 2, this.cellSize, this.cellSize, 12);
+        this.fillStyle(color, 0.2);
+        this.fillRoundedRect(-this.cellSize / 2, -this.cellSize / 2, this.cellSize, this.cellSize, 16);
         
         this.lineStyle(3, color, 0.8);
-        this.strokeRoundedRect(-this.cellSize / 2, -this.cellSize / 2, this.cellSize, this.cellSize, 12);
+        this.strokeRoundedRect(-this.cellSize / 2, -this.cellSize / 2, this.cellSize, this.cellSize, 16);
     }
 
     public clearHighlight(): void {

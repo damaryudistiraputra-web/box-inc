@@ -29,11 +29,11 @@ export class IncomeBoostUI {
             shadow: { offsetX: 0, offsetY: 1, color: '#000000', blur: 2, fill: true }
         }).setOrigin(0.5, 0.5);
 
-        // Invisible hit area for clicks
-        const hitArea = this.scene.add.zone(0, 0, 160, 48).setInteractive({ useHandCursor: true });
-        hitArea.on('pointerdown', () => this.onClick());
-
-        this.container.add([this.bg, this.text, hitArea]);
+        this.container = this.scene.add.container(x, y, [this.bg, this.text]);
+        this.container.setDepth(1500);
+        this.container.setSize(160, 48);
+        this.container.setInteractive({ useHandCursor: true });
+        this.container.on('pointerdown', () => this.onClick());
 
         this.scene.time.addEvent({
             delay: 1000,
@@ -50,7 +50,7 @@ export class IncomeBoostUI {
     private drawBg(fillColor: number, strokeColor: number, isGlowing: boolean = false) {
         this.bg.clear();
         this.bg.fillStyle(fillColor, 1);
-        this.bg.fillRoundedRect(-80, -24, 160, 48, 24); // 160x48 centered
+        this.bg.fillRoundedRect(-80, -24, 160, 48, 24);
         
         this.bg.lineStyle(isGlowing ? 3 : 2, strokeColor, 1);
         this.bg.strokeRoundedRect(-80, -24, 160, 48, 24);
@@ -73,17 +73,29 @@ export class IncomeBoostUI {
             const sec = Math.floor((state.remainingMs % 60000) / 1000);
             const timeStr = `${min}:${sec.toString().padStart(2, '0')}`;
             this.text.setText(`⚡ ${state.multiplier}x Boost\n${timeStr}`);
-            // Active: Orange Gradient feel
             this.drawBg(0xF59E0B, 0xD97706, true);
         } else {
             this.text.setText(`⚡ Boost Off\n(+${AdsBalance.incomeBoostMinutes}m Ad)`);
-            // Inactive: Dark slate
             this.drawBg(0x1E293B, 0x334155, false);
         }
     }
 
     private onClick(): void {
-        if (!AdsConfig.incomeBoostExtension || !AdsManager.getInstance().isAdAvailable()) return;
+        if (!AdsConfig.incomeBoostExtension) return;
+
+        EventBus.emit('PLAY_SOUND', 'ui_click');
+
+        if (!AdsManager.getInstance().isAdAvailable()) {
+            EventBus.emit('PLAY_SOUND', 'ui_error');
+            this.scene.tweens.add({
+                targets: this.container,
+                x: { from: this.container.x - 5, to: this.container.x + 5 },
+                duration: 50,
+                yoyo: true,
+                repeat: 3
+            });
+            return;
+        }
 
         AnalyticsManager.getInstance().logEvent('reward_offer_clicked', { source: RewardSource.SYSTEM });
         
@@ -94,13 +106,13 @@ export class IncomeBoostUI {
             }
         };
 
-        // Click animation
         this.scene.tweens.add({
             targets: this.container,
-            scaleX: 0.9,
-            scaleY: 0.9,
-            duration: 100,
-            yoyo: true
+            scaleX: 0.95,
+            scaleY: 0.95,
+            duration: 80,
+            yoyo: true,
+            ease: 'Sine.easeInOut'
         });
 
         AdsManager.getInstance().showRewarded(

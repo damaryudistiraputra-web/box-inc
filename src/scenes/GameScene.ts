@@ -79,7 +79,7 @@ export class GameScene extends Phaser.Scene {
         bg.fillGradientStyle(0x1a2a40, 0x1a2a40, 0x0a101f, 0x0a101f, 1);
         bg.fillRect(0, 0, this.cameras.main.width, this.cameras.main.height);
         
-        // Add subtle grid overlay to make it less boring
+        // Add subtle grid/blueprint overlay to make it less boring (Layer 0)
         this.add.grid(
             this.cameras.main.centerX, 
             this.cameras.main.centerY, 
@@ -87,8 +87,8 @@ export class GameScene extends Phaser.Scene {
             this.cameras.main.height, 
             30, 30, 
             0x000000, 0, 
-            0xffffff, 0.03
-        );
+            0xffffff, 0.02 // Very subtle
+        ).setDepth(0);
 
         // 1. Init Dependencies
         this.boxPool = new BoxPool(this, 15);
@@ -103,7 +103,6 @@ export class GameScene extends Phaser.Scene {
         this.inputController = new InputController(this, this.gridSystem, this.mergePipeline);
 
         // --- Economy Setup ---
-        // ResourceManager is already initialized in GameBootstrap
         this.economyManager = new EconomyManager(this);
         this.shopManager = ShopManager.getInstance();
         
@@ -113,16 +112,30 @@ export class GameScene extends Phaser.Scene {
         this.animationManager = new AnimationManager(this);
         new DebugManager(this);
         
-        // Prestige UI
-        new PrestigeUI(this).createTriggerButton();
+        // Prestige UI (Layer 800)
+        new PrestigeUI(this).createTriggerButton(); // Might need depth adjustment inside PrestigeUI
         
         // Register all pooled boxes to EconomyManager
         this.boxPool.getAllBoxes().forEach(box => {
             this.economyManager.registerSource(box);
         });
 
-        // 2. Build Grid - Centered in the available space (Zone 3)
-        this.gridSystem.createGrid(this.cameras.main.centerX, this.cameras.main.centerY - 100);
+        // 2. Build Grid - Centered at 0,0 local to the container
+        this.gridSystem.createGrid(0, 0);
+
+        // --- UI Container for Grid (Visual Scaling) ---
+        // Layer 100
+        const gridContainer = this.add.container(this.cameras.main.centerX, this.cameras.main.centerY - 80);
+        gridContainer.setScale(1.18); // Scale up ~20%
+        gridContainer.setDepth(100);
+
+        // Move all generated grid cells and boxes into the scaled container
+        this.children.list.forEach(child => {
+            // Check by constructor name to avoid circular imports or missing exports
+            if (child.constructor.name === 'GridCell' || child.constructor.name === 'BoxEntity') {
+                gridContainer.add(child);
+            }
+        });
 
         // --- Spawn Manager ---
         this.spawnManager = new SpawnManager(this.gridSystem, this.boxPool, this.inputController);
@@ -147,8 +160,8 @@ export class GameScene extends Phaser.Scene {
             }
         });
 
-        // 4. Build UI
-        new ResourceTrackerUI(this, 16, 48, 'money');
+        // 4. Build UI (Layers 500+)
+        new ResourceTrackerUI(this, 16, 48, 'money'); // Layer 500 via component
         
         // Progress Bar (Zone 2 - Below Top Bar)
         new ProgressBarUI(this, this.cameras.main.centerX, 140);
@@ -156,10 +169,11 @@ export class GameScene extends Phaser.Scene {
         // Income Boost UI (Zone 1 - Top Right)
         new IncomeBoostUI(this, this.cameras.main.width - 96, 48);
 
-        // Shop UI at the bottom (Mega Button)
-        new ShopUI(this, this.cameras.main.centerX, this.cameras.main.height - 80);
+        // Shop UI at the bottom (Mega Button) - Layer 500
+        const shop = new ShopUI(this, this.cameras.main.centerX, this.cameras.main.height - 80);
+        shop.setDepth(500);
         
-        // Stage Announcer
+        // Stage Announcer (Layer 800)
         new StageAnnouncerUI(this);
 
         // Merge Meter UI (Delivery Truck) - Above Mega Button
@@ -175,7 +189,8 @@ export class GameScene extends Phaser.Scene {
         new TutorialManager(this);
         
         // Help UI (Panduan)
-        new HelpUI(this, 30, this.cameras.main.height - 30);
+        const help = new HelpUI(this, 30, this.cameras.main.height - 30);
+        help.setDepth(900);
 
         // --- Save System Hooks ---
         EventBus.on(EVENTS.RESOURCE_CHANGED, this.markSaveDirty, this);

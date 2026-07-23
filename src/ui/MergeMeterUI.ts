@@ -1,102 +1,140 @@
 import Phaser from 'phaser';
 import { EventBus } from '../core/EventBus';
 import { MergeMeterManager } from '../managers/MergeMeterManager';
-import { FeatureGate } from '../managers/FeatureGate';
 
 export class MergeMeterUI {
     private scene: Phaser.Scene;
     private container: Phaser.GameObjects.Container;
-    private bgBar: Phaser.GameObjects.Graphics;
-    private fillBar: Phaser.GameObjects.Graphics;
-    private icon: Phaser.GameObjects.Text;
     
-    private width = 640; // Span the screen
+    private bg: Phaser.GameObjects.Graphics;
+    private barBg: Phaser.GameObjects.Graphics;
+    private barFill: Phaser.GameObjects.Graphics;
+    private barGlow: Phaser.GameObjects.Graphics;
+    private titleText: Phaser.GameObjects.Text;
+    private progressText: Phaser.GameObjects.Text;
+    
+    private width = 640;
     private height = 24;
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
         this.scene = scene;
 
-        this.bgBar = this.scene.add.graphics();
-        this.fillBar = this.scene.add.graphics();
-
-        this.drawBg();
-
-        // Icon floats slightly above/on the left of the bar
-        this.icon = this.scene.add.text(-20, 0, '🚚', { fontSize: '28px' }).setOrigin(0.5);
-
-        this.container = this.scene.add.container(x, y, [this.bgBar, this.fillBar, this.icon]);
+        this.bg = this.scene.add.graphics();
         
-        // Hide initially if feature is locked
-        this.container.setVisible(FeatureGate.isUnlocked('goldenTruck'));
+        this.titleText = this.scene.add.text(0, -32, '🚚 Delivery Truck', {
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+            fontSize: '18px',
+            fontStyle: 'bold',
+            color: '#F8FAFC'
+        }).setOrigin(0.5);
 
-        // Initialize state
-        const val = MergeMeterManager.getInstance().getMeterValue();
-        this.drawFill((val / 100) * this.width);
-
-        EventBus.on('MERGE_METER_UPDATED', this.onMeterUpdated, this);
-        EventBus.on('STAGE_ADVANCED', this.checkUnlock, this);
+        this.barBg = this.scene.add.graphics();
+        this.barFill = this.scene.add.graphics();
+        this.barGlow = this.scene.add.graphics();
         
+        this.progressText = this.scene.add.text(0, 0, '0 / 0', {
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+            fontSize: '14px',
+            fontStyle: 'bold',
+            color: '#FFFFFF',
+            shadow: { offsetX: 0, offsetY: 1, color: '#000000', blur: 2, fill: true }
+        }).setOrigin(0.5);
+
+        this.container = this.scene.add.container(x, y, [
+            this.bg, this.titleText, this.barBg, this.barGlow, this.barFill, this.progressText
+        ]);
+        this.container.setDepth(600); // Same logistics hub layer
+
+        this.drawLayout(0);
+
+        EventBus.on('MERGE_METER_UPDATED', this.updateProgress, this);
+        EventBus.on('MERGE_METER_FILLED', this.onFilled, this);
+        EventBus.on('TRUCK_DELIVERED', this.onDelivered, this);
+
+        // Initial fetch
+        const mgr = MergeMeterManager.getInstance();
+        this.updateProgress({ current: mgr.getMeterValue(), max: 100 });
+
         this.scene.events.once('shutdown', this.destroy, this);
     }
 
-    private drawBg() {
-        this.bgBar.clear();
-        this.bgBar.fillStyle(0x0F172A, 0.8);
-        this.bgBar.fillRoundedRect(0, -this.height / 2, this.width, this.height, 12);
-        this.bgBar.lineStyle(2, 0xF59E0B, 0.5); // Subtle orange border
-        this.bgBar.strokeRoundedRect(0, -this.height / 2, this.width, this.height, 12);
-    }
+    private drawLayout(percent: number) {
+        this.bg.clear();
+        // Match Shipment UI background (Slate 800 glassmorphism)
+        this.bg.fillStyle(0x1E293B, 0.9);
+        this.bg.fillRoundedRect(-this.width / 2, -this.height / 2 - 16, this.width, this.height + 16, 20);
+        this.bg.lineStyle(2, 0x334155, 1);
+        this.bg.strokeRoundedRect(-this.width / 2, -this.height / 2 - 16, this.width, this.height + 16, 20);
 
-    private drawFill(w: number) {
-        this.fillBar.clear();
-        if (w > 0) {
-            this.fillBar.fillGradientStyle(0xFCD34D, 0xF59E0B, 0xFCD34D, 0xF59E0B, 1);
-            this.fillBar.fillRoundedRect(0, -this.height / 2, w, this.height, 12);
-        }
-    }
-    
-    private destroy() {
-        EventBus.off('MERGE_METER_UPDATED', this.onMeterUpdated, this);
-        EventBus.off('STAGE_ADVANCED', this.checkUnlock, this);
-    }
+        // Progress Bar Background
+        this.barBg.clear();
+        this.barBg.fillStyle(0x0F172A, 1);
+        this.barBg.fillRoundedRect(-this.width / 2 + 16, -12, this.width - 32, 24, 12);
+        this.barBg.lineStyle(2, 0x000000, 0.3);
+        this.barBg.strokeRoundedRect(-this.width / 2 + 16, -12, this.width - 32, 24, 12);
 
-    private checkUnlock() {
-        if (FeatureGate.isUnlocked('goldenTruck')) {
-            this.container.setVisible(true);
-        }
-    }
-
-    private onMeterUpdated(value: number) {
-        if (!this.container.visible) return;
-
-        // Ensure currentWidth is initialized
-        if (!this.fillBar.getData('currentWidth')) {
-            this.fillBar.setData('currentWidth', 0);
-        }
-
-        const targetWidth = (value / 100) * this.width;
+        const targetW = Math.max(0, Math.min((this.width - 32) * percent, this.width - 32));
         
+        // Animated fill
+        if (!this.barFill.getData('currentW')) {
+            this.barFill.setData('currentW', 0);
+        }
+
         this.scene.tweens.add({
-            targets: this.fillBar,
-            currentWidth: targetWidth,
+            targets: this.barFill,
+            currentW: targetW,
             duration: 300,
             ease: 'Cubic.easeOut',
             onUpdate: (tween) => {
                 const w = tween.getValue() as number;
-                this.drawFill(w);
-                
-                // Move truck icon along the bar
-                this.icon.setX(w - 10);
+                this.barFill.clear();
+                this.barGlow.clear();
+                if (w > 0) {
+                    this.barFill.fillGradientStyle(0xF59E0B, 0xD97706, 0xF59E0B, 0xD97706, 1); // Amber premium
+                    this.barFill.fillRoundedRect(-this.width / 2 + 16, -12, w, 24, 12);
+                    
+                    this.barGlow.fillStyle(0xF59E0B, 0.5);
+                    this.barGlow.fillRoundedRect(-this.width / 2 + 16, -12, w, 24, 12);
+                }
             }
         });
-
-        // Flash icon
+        // Flash title text slightly instead of icon since icon was removed
         this.scene.tweens.add({
-            targets: this.icon,
-            scaleX: 1.5,
-            scaleY: 1.5,
+            targets: this.titleText,
+            scaleX: 1.1,
+            scaleY: 1.1,
             yoyo: true,
             duration: 150
         });
+    }
+
+    private updateProgress(data: { current: number, max: number }) {
+        this.progressText.setText(`${data.current} / ${data.max}`);
+        const p = data.max > 0 ? data.current / data.max : 0;
+        this.drawLayout(p);
+    }
+
+    private onFilled() {
+        this.progressText.setText('DELIVERING...');
+        EventBus.emit('PLAY_SOUND', 'ui_upgrade');
+        this.scene.tweens.add({
+            targets: this.container,
+            y: this.container.y - 10,
+            yoyo: true,
+            duration: 150,
+            repeat: 3
+        });
+    }
+
+    private onDelivered() {
+        EventBus.emit('PLAY_SOUND', 'ui_claim');
+        this.scene.cameras.main.flash(200, 255, 200, 100);
+        this.updateProgress({ current: 0, max: 100 });
+    }
+
+    private destroy() {
+        EventBus.off('MERGE_METER_UPDATED', this.updateProgress, this);
+        EventBus.off('MERGE_METER_FILLED', this.onFilled, this);
+        EventBus.off('TRUCK_DELIVERED', this.onDelivered, this);
     }
 }

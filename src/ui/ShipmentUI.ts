@@ -98,6 +98,7 @@ export class ShipmentUI {
         this.container = this.scene.add.container(x, y, [
             this.bg, this.titleText, this.reqsText, this.rewardText, this.claimBtn, this.adBtn
         ]);
+        this.container.setDepth(600); // Logistics Hub Layer
 
         this.container.setVisible(false); // hide until unlocked and generated
 
@@ -142,7 +143,7 @@ export class ShipmentUI {
         
         this.rewardText.setText(`Reward: +$${shipment.rewardCash.toString()}`);
 
-        // Pop in animation
+        // Pop in animation (300ms constraint)
         this.container.setScale(0.8);
         this.container.setAlpha(0);
         this.scene.tweens.add({
@@ -150,9 +151,11 @@ export class ShipmentUI {
             scaleX: 1,
             scaleY: 1,
             alpha: 1,
-            duration: 400,
+            duration: 300,
             ease: 'Back.easeOut'
         });
+        
+        EventBus.emit('PLAY_SOUND', 'ui_popup');
 
         this.checkClaimable();
     }
@@ -218,6 +221,7 @@ export class ShipmentUI {
 
     private onClaimClicked() {
         if (this.manager.canClaim()) {
+            EventBus.emit('PLAY_SOUND', 'ui_claim');
             if (this.adBtn.visible) {
                 AnalyticsManager.getInstance().logEvent('reward_offer_declined', { source: RewardSource.SHIPMENT });
             }
@@ -227,6 +231,7 @@ export class ShipmentUI {
             this.animateOut();
         } else {
             // Shake
+            EventBus.emit('PLAY_SOUND', 'ui_error');
             this.scene.tweens.add({
                 targets: this.claimBtn,
                 x: { from: this.claimBtn.x - 5, to: this.claimBtn.x + 5 },
@@ -243,6 +248,7 @@ export class ShipmentUI {
     private onAdClicked() {
         if (!this.manager.canClaim() || !this.manager.getActiveShipment()) return;
         
+        EventBus.emit('PLAY_SOUND', 'ui_click');
         AnalyticsManager.getInstance().logEvent('reward_offer_clicked', { source: RewardSource.SHIPMENT });
         
         const shipment = this.manager.getActiveShipment();
@@ -253,13 +259,14 @@ export class ShipmentUI {
             score: shipment.scoreVal * AdsBalance.rewardMultiplier
         };
 
-        // Button press animation
-        this.scene.tweens.add({ targets: this.adBtn, scaleX: 0.9, scaleY: 0.9, duration: 100, yoyo: true });
+        // Button press animation (80ms constraint)
+        this.scene.tweens.add({ targets: this.adBtn, scaleX: 0.9, scaleY: 0.9, duration: 80, yoyo: true });
 
         AdsManager.getInstance().showRewarded(
             RewardSource.SHIPMENT,
             bundle,
             () => {
+                EventBus.emit('PLAY_SOUND', 'ui_claim');
                 this.manager.completeShipmentWithoutReward();
                 this.scene.tweens.killTweensOf(this.claimBtn);
                 this.claimBtn.setScale(1);
@@ -276,7 +283,7 @@ export class ShipmentUI {
             targets: this.container,
             y: this.container.y + 50,
             alpha: 0,
-            duration: 300,
+            duration: 250,
             ease: 'Cubic.easeIn',
             onComplete: () => {
                 this.container.setVisible(false);
