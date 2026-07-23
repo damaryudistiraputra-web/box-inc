@@ -148,26 +148,28 @@ export class GameScene extends Phaser.Scene {
         });
 
         // 4. Build UI
-        new ResourceTrackerUI(this, 20, 20, 'money', 'Money: $');
-        new ProgressBarUI(this, this.cameras.main.centerX - 150, 20);
+        new ResourceTrackerUI(this, 20, 30, 'money', 'Money: $');
         
+        // Move Progress Bar down to its own row
+        new ProgressBarUI(this, this.cameras.main.centerX - 150, 75);
+        
+        // Income Boost UI (top right)
+        new IncomeBoostUI(this, this.cameras.main.width - 90, 30);
+
         // Shop UI at the bottom
-        new ShopUI(this, this.cameras.main.centerX, this.cameras.main.height - 100);
+        new ShopUI(this, this.cameras.main.centerX, this.cameras.main.height - 80);
         
         // Stage Announcer
         new StageAnnouncerUI(this);
 
-        // Merge Meter UI
-        new MergeMeterUI(this, this.cameras.main.centerX, this.cameras.main.height - 150);
+        // Merge Meter UI (Delivery Truck) - Moved up slightly
+        new MergeMeterUI(this, this.cameras.main.centerX, this.cameras.main.height - 180);
 
-        // Shipment UI (Side panel, moved to bottom right to avoid grid overlap)
-        new ShipmentUI(this, this.cameras.main.width - 110, this.cameras.main.height - 230, this.shipmentManager, this.boxPool);
+        // Shipment UI (Side panel, moved higher to avoid truck overlap)
+        new ShipmentUI(this, this.cameras.main.width - 110, this.cameras.main.height - 300, this.shipmentManager, this.boxPool);
 
         // GoldenTruckEventUI
         new GoldenTruckEventUI(this);
-
-        // Income Boost UI
-        new IncomeBoostUI(this, this.cameras.main.width - 90, 30);
 
         // FTUE / Tutorial
         new TutorialManager(this);
