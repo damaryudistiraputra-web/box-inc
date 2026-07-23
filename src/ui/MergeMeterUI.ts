@@ -14,18 +14,19 @@ export class MergeMeterUI {
     private progressText: Phaser.GameObjects.Text;
     
     private width = 640;
-    private height = 24;
+    private height = 36; // Taller — this is an important gameplay element
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
         this.scene = scene;
 
         this.bg = this.scene.add.graphics();
         
-        this.titleText = this.scene.add.text(0, -32, '🚚 Delivery Truck', {
+        this.titleText = this.scene.add.text(0, -36, '🚚 Delivery Truck', {
             fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-            fontSize: '18px',
+            fontSize: '20px',
             fontStyle: 'bold',
-            color: '#F8FAFC'
+            color: '#F8FAFC',
+            shadow: { offsetX: 0, offsetY: 1, color: '#000000', blur: 3, fill: true }
         }).setOrigin(0.5);
 
         this.barBg = this.scene.add.graphics();
@@ -34,10 +35,10 @@ export class MergeMeterUI {
         
         this.progressText = this.scene.add.text(0, 0, '0 / 0', {
             fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-            fontSize: '14px',
+            fontSize: '16px',
             fontStyle: 'bold',
             color: '#FFFFFF',
-            shadow: { offsetX: 0, offsetY: 1, color: '#000000', blur: 2, fill: true }
+            shadow: { offsetX: 0, offsetY: 1, color: '#000000', blur: 3, fill: true }
         }).setOrigin(0.5);
 
         this.container = this.scene.add.container(x, y, [
@@ -109,7 +110,8 @@ export class MergeMeterUI {
     }
 
     private updateProgress(data: { current: number, max: number }) {
-        this.progressText.setText(`${data.current} / ${data.max}`);
+        const pct = data.max > 0 ? Math.floor((data.current / data.max) * 100) : 0;
+        this.progressText.setText(`${data.current} / ${data.max}  ·  ${pct}%`);
         const p = data.max > 0 ? data.current / data.max : 0;
         this.drawLayout(p);
     }

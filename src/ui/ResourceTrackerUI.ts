@@ -53,9 +53,14 @@ export class ResourceTrackerUI extends Phaser.GameObjects.Container {
         });
     }
 
+    private formatNumber(n: number): string {
+        return n.toLocaleString('en-US');
+    }
+
     private onResourceChanged(payload: { id: string, amount: bigint, delta: bigint }): void {
         if (payload.id === this.resourceId) {
             const targetAmount = Number(payload.amount);
+            const isGain = targetAmount > this.currentVisualAmount;
             
             // Rolling number animation
             this.scene.tweens.addCounter({
@@ -65,7 +70,7 @@ export class ResourceTrackerUI extends Phaser.GameObjects.Container {
                 ease: 'Cubic.easeOut',
                 onUpdate: (tween) => {
                     this.currentVisualAmount = Math.floor(tween.getValue() as number);
-                    this.balanceText.setText(this.currentVisualAmount.toString());
+                    this.balanceText.setText(this.formatNumber(this.currentVisualAmount));
                     
                     // Adjust background width dynamically based on text size + padding
                     const newWidth = Math.max(200, 50 + this.balanceText.width + 24);
@@ -73,15 +78,22 @@ export class ResourceTrackerUI extends Phaser.GameObjects.Container {
                 }
             });
             
-            // Subtle pop animation
-            this.scene.tweens.add({
-                targets: this.balanceText,
-                scaleX: 1.1,
-                scaleY: 1.1,
-                yoyo: true,
-                duration: 120,
-                ease: 'Sine.easeInOut'
-            });
+            // Green flash on income gain
+            if (isGain) {
+                this.scene.tweens.add({
+                    targets: this.balanceText,
+                    scaleX: 1.1,
+                    scaleY: 1.1,
+                    yoyo: true,
+                    duration: 120,
+                    ease: 'Sine.easeInOut'
+                });
+                // Brief green glow on the bg
+                this.bg.lineStyle(2, 0x10B981, 1);
+                this.scene.time.delayedCall(200, () => {
+                    this.bg.lineStyle(2, 0x334155, 1);
+                });
+            }
         }
     }
 }

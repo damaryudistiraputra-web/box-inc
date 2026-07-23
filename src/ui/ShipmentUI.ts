@@ -59,9 +59,10 @@ export class ShipmentUI {
 
         this.rewardText = this.scene.add.text(-this.width / 2 + 20, -this.height / 2 + 75, '', {
             fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-            fontSize: '18px',
+            fontSize: '22px',
             fontStyle: 'bold',
-            color: '#10B981'
+            color: '#10B981',
+            shadow: { offsetX: 0, offsetY: 1, color: '#065F46', blur: 2, fill: true }
         }).setOrigin(0, 0.5);
 
         // Claim Button (Right aligned)
@@ -72,11 +73,11 @@ export class ShipmentUI {
         
         this.claimBtnText = this.scene.add.text(0, 0, LocalizationManager.t('shipment.claim'), {
             fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-            fontSize: '16px',
+            fontSize: '18px',
             fontStyle: 'bold',
             color: '#FFFFFF'
         }).setOrigin(0.5);
-        this.claimBtn = this.scene.add.container(this.width / 2 - 90, 0, [this.claimBtnBg, claimZone, this.claimBtnText]);
+        this.claimBtn = this.scene.add.container(this.width / 2 - 110, 0, [this.claimBtnBg, claimZone, this.claimBtnText]);
 
         claimZone.on('pointerdown', () => this.onClaimClicked());
 
@@ -141,7 +142,7 @@ export class ShipmentUI {
         if (shipment.tier === 'Epic') color = '#A855F7'; // Purple 500
         this.titleText.setColor(color);
         
-        this.rewardText.setText(`Reward: +$${shipment.rewardCash.toString()}`);
+        this.rewardText.setText(`Reward: +$${Number(shipment.rewardCash).toLocaleString()}`);
 
         // Pop in animation (300ms constraint)
         this.container.setScale(0.8);

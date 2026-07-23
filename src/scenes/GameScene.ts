@@ -79,16 +79,71 @@ export class GameScene extends Phaser.Scene {
         bg.fillGradientStyle(0x1a2a40, 0x1a2a40, 0x0a101f, 0x0a101f, 1);
         bg.fillRect(0, 0, this.cameras.main.width, this.cameras.main.height);
         
-        // Add subtle grid/blueprint overlay to make it less boring (Layer 0)
-        this.add.grid(
-            this.cameras.main.centerX, 
-            this.cameras.main.centerY, 
-            this.cameras.main.width, 
-            this.cameras.main.height, 
-            30, 30, 
-            0x000000, 0, 
-            0xffffff, 0.02 // Very subtle
-        ).setDepth(0);
+        // --- Industrial Atmosphere Background ---
+        const atmo = this.add.graphics();
+        atmo.setDepth(0);
+        
+        // Subtle grid/blueprint lines
+        const w = this.cameras.main.width;
+        const h = this.cameras.main.height;
+        
+        atmo.lineStyle(1, 0xffffff, 0.015);
+        for (let gx = 0; gx < w; gx += 30) {
+            atmo.beginPath();
+            atmo.moveTo(gx, 0);
+            atmo.lineTo(gx, h);
+            atmo.strokePath();
+        }
+        for (let gy = 0; gy < h; gy += 30) {
+            atmo.beginPath();
+            atmo.moveTo(0, gy);
+            atmo.lineTo(w, gy);
+            atmo.strokePath();
+        }
+        
+        // Gear silhouettes in corners (very faint)
+        const gearAlpha = 0.025;
+        
+        // Top-left gear
+        atmo.lineStyle(2, 0xffffff, gearAlpha);
+        atmo.strokeCircle(60, 60, 40);
+        atmo.strokeCircle(60, 60, 25);
+        for (let a = 0; a < 8; a++) {
+            const angle = (a / 8) * Math.PI * 2;
+            atmo.beginPath();
+            atmo.moveTo(60 + Math.cos(angle) * 28, 60 + Math.sin(angle) * 28);
+            atmo.lineTo(60 + Math.cos(angle) * 45, 60 + Math.sin(angle) * 45);
+            atmo.strokePath();
+        }
+        
+        // Bottom-right gear
+        atmo.strokeCircle(w - 80, h - 120, 50);
+        atmo.strokeCircle(w - 80, h - 120, 30);
+        for (let a = 0; a < 10; a++) {
+            const angle = (a / 10) * Math.PI * 2;
+            atmo.beginPath();
+            atmo.moveTo(w - 80 + Math.cos(angle) * 33, h - 120 + Math.sin(angle) * 33);
+            atmo.lineTo(w - 80 + Math.cos(angle) * 55, h - 120 + Math.sin(angle) * 55);
+            atmo.strokePath();
+        }
+        
+        // Diagonal pipe on left side
+        atmo.lineStyle(3, 0xffffff, 0.02);
+        atmo.beginPath();
+        atmo.moveTo(15, 200);
+        atmo.lineTo(15, h - 200);
+        atmo.strokePath();
+        atmo.fillStyle(0xffffff, 0.02);
+        atmo.fillCircle(15, 200, 5);
+        atmo.fillCircle(15, h - 200, 5);
+        
+        // Diagonal pipe on right side
+        atmo.beginPath();
+        atmo.moveTo(w - 15, 250);
+        atmo.lineTo(w - 15, h - 150);
+        atmo.strokePath();
+        atmo.fillCircle(w - 15, 250, 5);
+        atmo.fillCircle(w - 15, h - 150, 5);
 
         // 1. Init Dependencies
         this.boxPool = new BoxPool(this, 15);

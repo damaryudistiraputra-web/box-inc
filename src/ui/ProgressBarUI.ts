@@ -22,20 +22,21 @@ export class ProgressBarUI {
         this.glowBar = this.scene.add.graphics(); // Behind fill for ambient glow
         this.fillBar = this.scene.add.graphics();
         
-        this.stageText = this.scene.add.text(0, -32, '', { 
+        this.stageText = this.scene.add.text(0, -36, '', { 
             fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-            fontSize: '18px', 
+            fontSize: '22px', 
             fontStyle: 'bold',
-            color: '#F8FAFC'
+            color: '#F8FAFC',
+            shadow: { offsetX: 0, offsetY: 1, color: '#000000', blur: 3, fill: true }
         }).setOrigin(0.5);
 
         // Premium score text embedded in the bar
         this.scoreText = this.scene.add.text(0, 0, '', { 
             fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-            fontSize: '16px',
+            fontSize: '18px',
             fontStyle: 'bold', 
             color: '#FFFFFF',
-            shadow: { offsetX: 0, offsetY: 1, color: '#000000', blur: 2, fill: true }
+            shadow: { offsetX: 0, offsetY: 1, color: '#000000', blur: 3, fill: true }
         }).setOrigin(0.5);
 
         this.container = this.scene.add.container(x, y, [this.bgBar, this.glowBar, this.fillBar, this.stageText, this.scoreText]);
@@ -117,10 +118,10 @@ export class ProgressBarUI {
             
             this.drawBar(percent);
             const percentText = Math.floor(percent * 100);
-            this.scoreText.setText(`${score} / ${nextThreshold} (${percentText}%)`);
+            this.scoreText.setText(`${percentText}%  ·  ${score.toLocaleString()} / ${nextThreshold.toLocaleString()}`);
         } else {
             this.drawBar(1);
-            this.scoreText.setText(`MAX LEVEL (${score})`);
+            this.scoreText.setText(`MAX LEVEL  ·  ${score.toLocaleString()}`);
         }
     }
 
