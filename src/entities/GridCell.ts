@@ -40,12 +40,12 @@ export class GridCell extends Phaser.GameObjects.Graphics {
 
     private drawNormal(): void {
         this.clear();
-        // Industrial panel base — darker center, lighter edge (inset look)
-        this.fillGradientStyle(0x0F172A, 0x0F172A, 0x1E293B, 0x1E293B, 0.7);
+        // Industrial workstation pad — lighter panel that sits ON the factory floor
+        this.fillGradientStyle(0x1E293B, 0x1E293B, 0x2D3B4E, 0x2D3B4E, 0.85);
         this.fillRoundedRect(-this.cellSize / 2, -this.cellSize / 2, this.cellSize, this.cellSize, 14);
         
-        // Panel border — industrial seam
-        this.lineStyle(2, 0x334155, 0.5);
+        // Panel border — industrial seam (more visible)
+        this.lineStyle(2, 0x475569, 0.5);
         this.strokeRoundedRect(-this.cellSize / 2, -this.cellSize / 2, this.cellSize, this.cellSize, 14);
     }
 

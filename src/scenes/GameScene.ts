@@ -129,8 +129,13 @@ export class GameScene extends Phaser.Scene {
         gridContainer.setScale(1.85); // Scale up to fill ~70% of screen
         gridContainer.setDepth(100);
 
+        // --- Factory Floor Background ---
+        // Draws conveyor lines, pipes, and industrial floor BEHIND the cells
+        this.drawFactoryFloor(gridContainer);
+
         // Move all initial grid cells, decorations, and boxes into the scaled container
-        this.children.list.forEach(child => {
+        const snapshot = [...this.children.list]; // snapshot to avoid mutation during iteration
+        snapshot.forEach(child => {
             const n = child.name;
             if (n === 'gridCell' || n === 'gridCellDecor' || n === 'gridCellScan' || n === 'boxEntity') {
                 gridContainer.add(child);
@@ -259,6 +264,160 @@ export class GameScene extends Phaser.Scene {
             grid: {
                 boxes: gridBoxes
             }
+        });
+    }
+
+    /**
+     * Draws an industrial factory floor behind the grid.
+     * Includes: base panel, conveyor belts between cells, pipe connections,
+     * warning stripes, and a frame border.
+     * All coordinates are relative to grid center (0,0).
+     */
+    private drawFactoryFloor(container: Phaser.GameObjects.Container): void {
+        const cols = GRID_CONFIG.cols;
+        const rows = GRID_CONFIG.rows;
+        const cellSize = GRID_CONFIG.cellSize;
+        const spacing = GRID_CONFIG.spacing;
+        
+        const totalW = cols * cellSize + (cols - 1) * spacing;
+        const totalH = rows * cellSize + (rows - 1) * spacing;
+        const pad = 30; // padding around the grid
+        
+        // Origin matches GridSystem's calculation
+        const originX = -(totalW / 2) + (cellSize / 2);
+        const originY = -(totalH / 2) + (cellSize / 2);
+
+        const floor = this.add.graphics();
+        
+        // === 1. Factory Floor Base Panel ===
+        // Slightly lighter than game background, with rounded industrial corners
+        floor.fillStyle(0x1E293B, 0.6);
+        floor.fillRoundedRect(-totalW/2 - pad, -totalH/2 - pad, totalW + pad*2, totalH + pad*2, 20);
+        
+        // Outer frame border (industrial steel)
+        floor.lineStyle(3, 0x475569, 0.6);
+        floor.strokeRoundedRect(-totalW/2 - pad, -totalH/2 - pad, totalW + pad*2, totalH + pad*2, 20);
+        
+        // Inner frame border (double-line industrial look)
+        floor.lineStyle(1, 0x334155, 0.4);
+        floor.strokeRoundedRect(-totalW/2 - pad + 6, -totalH/2 - pad + 6, totalW + pad*2 - 12, totalH + pad*2 - 12, 16);
+
+        // === 2. Warning stripes at top and bottom edges ===
+        const stripeColor = 0xF59E0B; // Amber
+        const stripeY1 = -totalH/2 - pad + 8;
+        const stripeY2 = totalH/2 + pad - 14;
+        const stripeW = totalW + pad*2 - 24;
+        const stripeStartX = -totalW/2 - pad + 12;
+        
+        for (let sx = 0; sx < stripeW; sx += 16) {
+            floor.fillStyle(stripeColor, 0.08);
+            floor.fillRect(stripeStartX + sx, stripeY1, 8, 6);
+            floor.fillRect(stripeStartX + sx + 8, stripeY2, 8, 6);
+        }
+
+        // === 3. Conveyor Belts — horizontal lines between cells ===
+        const conveyorColor = 0x64748B; // Slate 500
+        
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols - 1; c++) {
+                const x1 = originX + c * (cellSize + spacing) + cellSize/2;
+                const y = originY + r * (cellSize + spacing);
+                const x2 = x1 + spacing;
+                
+                // Belt track (two parallel lines)
+                floor.lineStyle(2, conveyorColor, 0.25);
+                floor.beginPath();
+                floor.moveTo(x1, y - 6);
+                floor.lineTo(x2, y - 6);
+                floor.strokePath();
+                
+                floor.beginPath();
+                floor.moveTo(x1, y + 6);
+                floor.lineTo(x2, y + 6);
+                floor.strokePath();
+                
+                // Chevron arrows on conveyor (pointing right →)
+                const midX = (x1 + x2) / 2;
+                floor.lineStyle(1.5, conveyorColor, 0.2);
+                floor.beginPath();
+                floor.moveTo(midX - 3, y - 4);
+                floor.lineTo(midX + 2, y);
+                floor.lineTo(midX - 3, y + 4);
+                floor.strokePath();
+            }
+        }
+        
+        // === 4. Pipe connections — vertical lines between cells ===
+        for (let r = 0; r < rows - 1; r++) {
+            for (let c = 0; c < cols; c++) {
+                const x = originX + c * (cellSize + spacing);
+                const y1 = originY + r * (cellSize + spacing) + cellSize/2;
+                const y2 = y1 + spacing;
+                
+                // Pipe (single thicker line with caps)
+                floor.lineStyle(3, conveyorColor, 0.2);
+                floor.beginPath();
+                floor.moveTo(x, y1);
+                floor.lineTo(x, y2);
+                floor.strokePath();
+                
+                // Pipe joint circles at ends
+                floor.fillStyle(conveyorColor, 0.15);
+                floor.fillCircle(x, y1, 3);
+                floor.fillCircle(x, y2, 3);
+            }
+        }
+        
+        // === 5. Corner mounting bolts on the outer frame ===
+        const boltColor = 0x94A3B8; // Slate 400
+        const boltR = 3;
+        const boltInset = 16;
+        const fx1 = -totalW/2 - pad + boltInset;
+        const fy1 = -totalH/2 - pad + boltInset;
+        const fx2 = totalW/2 + pad - boltInset;
+        const fy2 = totalH/2 + pad - boltInset;
+        
+        floor.fillStyle(boltColor, 0.3);
+        floor.fillCircle(fx1, fy1, boltR);
+        floor.fillCircle(fx2, fy1, boltR);
+        floor.fillCircle(fx1, fy2, boltR);
+        floor.fillCircle(fx2, fy2, boltR);
+        
+        // Inner ring on bolts
+        floor.lineStyle(1, boltColor, 0.2);
+        floor.strokeCircle(fx1, fy1, boltR + 2);
+        floor.strokeCircle(fx2, fy1, boltR + 2);
+        floor.strokeCircle(fx1, fy2, boltR + 2);
+        floor.strokeCircle(fx2, fy2, boltR + 2);
+
+        // === 6. "BOX INC." label at top of factory frame ===
+        const label = this.add.text(0, -totalH/2 - pad + 14, 'BOX INC. FACTORY FLOOR', {
+            fontFamily: '"Courier New", Courier, monospace',
+            fontSize: '8px',
+            fontStyle: 'bold',
+            color: '#64748B',
+            letterSpacing: 4
+        }).setOrigin(0.5).setAlpha(0.5);
+
+        // Add floor (first, so it's behind everything) and label
+        container.add(floor);
+        container.sendToBack(floor);
+        container.add(label);
+
+        // === 7. Subtle conveyor shimmer animation ===
+        const shimmer = this.add.graphics();
+        shimmer.fillStyle(0x60A5FA, 0.04);
+        shimmer.fillRect(-totalW/2, -2, totalW, 4);
+        container.add(shimmer);
+        
+        this.tweens.add({
+            targets: shimmer,
+            y: { from: -totalH/2, to: totalH/2 },
+            alpha: { from: 0, to: 0.15 },
+            duration: 4000,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
         });
     }
 }
